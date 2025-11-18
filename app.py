@@ -13,12 +13,35 @@ import streamlit as st
 from openai import OpenAI
 from typing import List, Dict, Any, Tuple, Optional
 import os
-from collections import Counter
 from dotenv import load_dotenv
 import sample_data
+import streamlit.components.v1 as components
 
 # Load environment variables from .env file
 load_dotenv()
+
+# Constants
+TEXTAREA_RESIZE_INTERVAL_MS = 100  # Interval for checking textarea resize in milliseconds
+
+
+class Framework:
+    """Framework name constants to avoid magic strings."""
+    CHAIN_OF_THOUGHT = "Chain of Thought"
+    TREE_OF_THOUGHT = "Tree of Thought"
+    SELF_CONSISTENCY = "Self-Consistency"
+    FEW_SHOT = "Few-Shot"
+    REFLECTION_REVISION = "Reflection & Revision"
+    
+    @classmethod
+    def all(cls) -> list:
+        """Return all framework names as a list."""
+        return [
+            cls.CHAIN_OF_THOUGHT,
+            cls.TREE_OF_THOUGHT,
+            cls.SELF_CONSISTENCY,
+            cls.FEW_SHOT,
+            cls.REFLECTION_REVISION
+        ]
 
 
 # Initialize OpenAI client
@@ -44,7 +67,17 @@ def call_llm(client: OpenAI, prompt: str, model: str, temperature: float = 0.7) 
         
     Returns:
         The LLM response text
+        
+    Raises:
+        ValueError: If prompt is empty or None
     """
+    # Input validation
+    if not prompt or not prompt.strip():
+        raise ValueError("Prompt cannot be empty")
+    
+    if not model:
+        raise ValueError("Model must be specified")
+    
     try:
         response = client.chat.completions.create(
             model=model,
@@ -56,17 +89,6 @@ def call_llm(client: OpenAI, prompt: str, model: str, temperature: float = 0.7) 
         return f"Error calling LLM: {str(e)}"
 
 
-def build_adhoc_prompt(task: str) -> str:
-    """
-    Build a simple ad-hoc prompt from the task.
-    
-    Args:
-        task: User's task or problem statement
-        
-    Returns:
-        Ad-hoc prompt string
-    """
-    return task
 
 
 def build_chain_of_thought_prompt(task: str) -> str:
@@ -81,14 +103,15 @@ def build_chain_of_thought_prompt(task: str) -> str:
     """
     return f"""{task}
 
-Let's think step by step to solve this problem:
+Let's approach this step-by-step:
 
 1. First, identify the key components and requirements
-2. Then, break down the problem into smaller parts
-3. Analyze each part carefully
-4. Finally, synthesize the information to reach a conclusion
+2. Break down the problem into manageable parts
+3. Analyze each part systematically
+4. Consider relationships and dependencies
+5. Synthesize findings into a coherent solution
 
-Please provide your reasoning for each step."""
+Provide your reasoning for each step."""
 
 
 def build_tree_of_thought_prompt(task: str) -> str:
@@ -241,148 +264,379 @@ Critique of the initial answer:
 Based on this critique, provide an improved, revised answer that addresses the identified weaknesses and incorporates the suggested improvements."""
 
 
-def run_adhoc_approach(client: OpenAI, task: str, model: str, temperature: float) -> Tuple[str, str]:
-    """
-    Run the ad-hoc approach.
+class SampleDataAccessor:
+    """Data access layer for sample data to decouple from direct dictionary access."""
     
-    Returns:
-        Tuple of (prompt, output)
-    """
-    prompt = build_adhoc_prompt(task)
-    output = call_llm(client, prompt, model, temperature)
-    return prompt, output
-
-
-def run_chain_of_thought(client: OpenAI, task: str, model: str, temperature: float) -> Tuple[str, str]:
-    """
-    Run the Chain of Thought framework.
+    def __init__(self, data_module=None):
+        """Initialize with sample data module.
+        
+        Args:
+            data_module: Module containing sample data (defaults to sample_data)
+        """
+        self.data = data_module or sample_data
     
-    Returns:
-        Tuple of (prompt, output)
-    """
-    prompt = build_chain_of_thought_prompt(task)
-    output = call_llm(client, prompt, model, temperature)
-    return prompt, output
-
-
-def run_tree_of_thought(client: OpenAI, task: str, model: str, temperature: float) -> Tuple[str, str]:
-    """
-    Run the Tree of Thought framework.
+    def get_sample_task(self, framework: str) -> str:
+        """Get sample task for a framework.
+        
+        Args:
+            framework: Framework name
+            
+        Returns:
+            Sample task string
+            
+        Raises:
+            ValueError: If framework not found
+        """
+        if framework not in self.data.SAMPLE_TASKS:
+            raise ValueError(f"No sample task found for framework: {framework}")
+        return self.data.SAMPLE_TASKS[framework]
     
-    Returns:
-        Tuple of (prompt, output)
-    """
-    prompt = build_tree_of_thought_prompt(task)
-    output = call_llm(client, prompt, model, temperature)
-    return prompt, output
+    def get_adhoc_output(self, framework: str) -> str:
+        """Get adhoc output for a framework.
+        
+        Args:
+            framework: Framework name
+            
+        Returns:
+            Adhoc output string
+            
+        Raises:
+            ValueError: If framework not found
+        """
+        if framework not in self.data.ADHOC_OUTPUTS:
+            raise ValueError(f"No adhoc output found for framework: {framework}")
+        return self.data.ADHOC_OUTPUTS[framework]
+    
+    def get_framework_output(self, framework: str) -> str:
+        """Get framework output for a framework.
+        
+        Args:
+            framework: Framework name
+            
+        Returns:
+            Framework output string
+            
+        Raises:
+            ValueError: If framework not found
+        """
+        if framework not in self.data.FRAMEWORK_OUTPUTS:
+            raise ValueError(f"No framework output found for framework: {framework}")
+        return self.data.FRAMEWORK_OUTPUTS[framework]
+    
+    def get_intermediate_data(self, framework: str) -> Optional[Dict[str, Any]]:
+        """Get intermediate data for a framework if it exists.
+        
+        Args:
+            framework: Framework name
+            
+        Returns:
+            Intermediate data dict or None if not available
+        """
+        return self.data.INTERMEDIATE_DATA.get(framework)
+    
+    def has_framework(self, framework: str) -> bool:
+        """Check if framework exists in sample data.
+        
+        Args:
+            framework: Framework name
+            
+        Returns:
+            True if framework has sample data
+        """
+        return framework in self.data.SAMPLE_TASKS
 
 
-def run_self_consistency(client: OpenAI, task: str, model: str, temperature: float, num_samples: int) -> Tuple[str, str, Dict[str, Any]]:
-    """
-    Run the Self-Consistency framework with multiple samples.
-    
-    Returns:
-        Tuple of (prompt, final_output, intermediate_data)
-    """
-    prompt = build_self_consistency_prompt(task)
-    samples = []
-    
-    for i in range(num_samples):
-        output = call_llm(client, prompt, model, temperature)
-        samples.append(output)
-    
-    # Aggregate results - use the first sample as representative
-    # In a real implementation, you might extract and vote on key conclusions
-    vote_prompt = f"""Here are {num_samples} different attempts at solving the same problem:
+# Global instance of data accessor
+_sample_data_accessor = SampleDataAccessor()
 
-{chr(10).join([f"Attempt {i+1}:{chr(10)}{sample}{chr(10)}" for i, sample in enumerate(samples)])}
 
-Analyze these attempts and:
-1. Identify the most common or consistent conclusions
-2. Evaluate which reasoning is most sound
-3. Synthesize the best elements from all attempts into a final answer
+def get_sample_data() -> SampleDataAccessor:
+    """Get the sample data accessor instance."""
+    return _sample_data_accessor
 
-Provide the final synthesized answer."""
+
+def setup_page_config():
+    """Configure page settings and inject custom CSS/JavaScript."""
+    st.set_page_config(page_title="AI Prompt Framework Demo", layout="wide")
     
-    final_output = call_llm(client, vote_prompt, model, 0.3)
+    # Custom CSS to double the font size for output text
+    st.markdown("""
+    <style>
+    /* Double the font size for info and success boxes */
+    .stAlert p, .stAlert div {
+        font-size: 2rem !important;
+        line-height: 1.6 !important;
+    }
+    /* Double the font size for code blocks (prompts) */
+    .stCodeBlock code, .stCodeBlock pre {
+        font-size: 2rem !important;
+        line-height: 1.6 !important;
+        white-space: pre-wrap !important;
+        word-wrap: break-word !important;
+    }
+    /* Double the font size for text areas (online mode prompts) */
+    .stTextArea textarea {
+        font-size: 2rem !important;
+        line-height: 1.6 !important;
+        resize: none !important;
+        overflow: hidden !important;
+        min-height: 100px !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
     
-    intermediate_data = {
-        "samples": samples,
-        "num_samples": num_samples
+    # JavaScript for auto-resizing text areas
+    components.html(f"""
+    <script>
+    function autoResizeTextareas() {{
+        const textareas = parent.document.querySelectorAll('.stTextArea textarea');
+        textareas.forEach(textarea => {{
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+            
+            textarea.removeEventListener('input', autoResizeOnInput);
+            textarea.addEventListener('input', autoResizeOnInput);
+        }});
+    }}
+    
+    function autoResizeOnInput(e) {{
+        e.target.style.height = 'auto';
+        e.target.style.height = e.target.scrollHeight + 'px';
+    }}
+    
+    autoResizeTextareas();
+    setInterval(autoResizeTextareas, {TEXTAREA_RESIZE_INTERVAL_MS});
+    </script>
+    """, height=0)
+
+
+def initialize_session_state():
+    """Initialize all session state variables with default values."""
+    defaults = {
+        'mode': 'offline',
+        'adhoc_prompt_input': '',
+        'framework_prompt_input': '',
+        'previous_framework': None,
+        'show_clear_dialog': False
     }
     
-    return prompt, final_output, intermediate_data
+    for key, default_value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = default_value
 
 
-def run_few_shot(client: OpenAI, task: str, model: str, temperature: float) -> Tuple[str, str]:
-    """
-    Run the Few-Shot framework.
+def render_sidebar(framework: str) -> tuple:
+    """Render sidebar controls and return selected settings.
     
     Returns:
-        Tuple of (prompt, output)
+        Tuple of (model, temperature)
     """
-    prompt = build_few_shot_prompt(task)
-    output = call_llm(client, prompt, model, temperature)
-    return prompt, output
+    st.sidebar.header("⚙️ Configuration")
+    
+    if st.session_state.mode == 'online':
+        # Show clear dialog if framework changed
+        if st.session_state.show_clear_dialog:
+            st.sidebar.markdown("---")
+            st.sidebar.warning("Framework changed. Clear prompts?")
+            col1, col2 = st.sidebar.columns(2)
+            with col1:
+                if st.button("Yes", key="clear_yes", use_container_width=True):
+                    st.session_state.adhoc_prompt_input = ""
+                    st.session_state.framework_prompt_input = ""
+                    st.session_state.show_clear_dialog = False
+                    st.rerun()
+            with col2:
+                if st.button("No", key="clear_no", use_container_width=True):
+                    st.session_state.show_clear_dialog = False
+                    st.rerun()
+        
+        st.sidebar.markdown("---")
+        st.sidebar.subheader("Online Mode Settings")
+        
+        model = st.sidebar.selectbox(
+            "Model",
+            ["gpt-5", "gpt-5-mini", "gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"],
+            index=2
+        )
+        
+        temperature = st.sidebar.slider(
+            "Temperature",
+            min_value=0.0,
+            max_value=2.0,
+            value=0.7,
+            step=0.1
+        )
+        
+        load_sample_button = st.sidebar.button("📋 Load Sample Prompt", use_container_width=True)
+        if load_sample_button:
+            try:
+                data_accessor = get_sample_data()
+                sample_task = data_accessor.get_sample_task(framework)
+                st.session_state.adhoc_prompt_input = sample_task
+                st.session_state.framework_prompt_input = build_framework_prompt(framework, sample_task)
+            except ValueError as e:
+                st.error(str(e))
+        
+        clear_button = st.sidebar.button("🗑️ Clear All Text", use_container_width=True)
+        if clear_button:
+            st.session_state.adhoc_prompt_input = ""
+            st.session_state.framework_prompt_input = ""
+    else:
+        # Defaults for offline mode
+        model = "gpt-4o-mini"
+        temperature = 0.7
+    
+    return model, temperature
 
 
-def run_reflection_revision(client: OpenAI, task: str, model: str, temperature: float) -> Tuple[str, str, Dict[str, Any]]:
-    """
-    Run the Reflection & Revision framework.
+def render_intermediate_data(intermediate: Dict[str, Any], framework: str):
+    """Render intermediate reasoning data for applicable frameworks."""
+    if not intermediate:
+        return
     
-    Returns:
-        Tuple of (prompt, final_output, intermediate_data)
-    """
-    # Step 1: Initial answer
-    initial_prompt = build_reflection_revision_prompt_initial(task)
-    initial_answer = call_llm(client, initial_prompt, model, temperature)
-    
-    # Step 2: Critique
-    critique_prompt = build_reflection_revision_prompt_critique(task, initial_answer)
-    critique = call_llm(client, critique_prompt, model, temperature)
-    
-    # Step 3: Revision
-    revision_prompt = build_reflection_revision_prompt_revision(task, initial_answer, critique)
-    final_answer = call_llm(client, revision_prompt, model, temperature)
-    
-    # Combine all prompts for display
-    full_prompt = f"""Step 1 - Initial Answer Prompt:
-{initial_prompt}
+    st.markdown("### 🔍 Intermediate Reasoning")
+    if framework == Framework.SELF_CONSISTENCY:
+        tabs = st.tabs([f"Sample {i+1}" for i in range(intermediate["num_samples"])])
+        for i, tab in enumerate(tabs):
+            with tab:
+                st.write(intermediate["samples"][i])
+    elif framework == Framework.REFLECTION_REVISION:
+        tab1, tab2, tab3 = st.tabs(["Initial Answer", "Critique", "Final Answer"])
+        with tab1:
+            st.write(intermediate["initial_answer"])
+        with tab2:
+            st.write(intermediate["critique"])
+        with tab3:
+            st.write(intermediate["final_answer"])
 
-Step 2 - Critique Prompt:
-{critique_prompt}
 
-Step 3 - Revision Prompt:
-{revision_prompt}"""
+def render_offline_mode(framework: str):
+    """Render offline mode with pre-loaded sample data."""
+    try:
+        data_accessor = get_sample_data()
+        
+        # Get sample data through accessor
+        task = data_accessor.get_sample_task(framework)
+        adhoc_prompt = task
+        framework_prompt = build_framework_prompt(framework, task)
+        
+        # Display prompts
+        st.markdown("---")
+        st.subheader("📝 Prompts")
+        colp1, colp2 = st.columns(2)
+        
+        with colp1:
+            st.markdown("### 📄 Basic Prompt")
+            st.code(adhoc_prompt, language=None)
+        with colp2:
+            st.markdown(f"### 🎯 {framework} Prompt")
+            st.code(framework_prompt, language=None)
+        
+        # Display outputs
+        st.markdown("---")
+        st.subheader("📊 Outputs Comparison")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("### 💬 Basic Output")
+            st.info(data_accessor.get_adhoc_output(framework))
+        with col2:
+            st.markdown(f"### ✨ {framework} Output")
+            st.success(data_accessor.get_framework_output(framework))
+            
+            # Intermediate data if applicable
+            intermediate = data_accessor.get_intermediate_data(framework)
+            render_intermediate_data(intermediate, framework)
+    except ValueError as e:
+        st.error(f"Error loading sample data: {str(e)}")
+    except Exception as e:
+        st.error(f"Unexpected error in offline mode: {str(e)}")
+
+
+def render_online_mode(framework: str, model: str, temperature: float):
+    """Render online mode with editable prompts and API calls."""
+    # Display prompts
+    st.markdown("---")
+    st.subheader("📝 Prompts")
+    colp1, colp2 = st.columns(2)
     
-    intermediate_data = {
-        "initial_answer": initial_answer,
-        "critique": critique,
-        "final_answer": final_answer
-    }
+    with colp1:
+        st.markdown("### 📄 Basic Prompt")
+        st.session_state.adhoc_prompt_input = st.text_area(
+            label="Basic Prompt",
+            value=st.session_state.adhoc_prompt_input,
+            height=None,
+            label_visibility="collapsed",
+            key="adhoc_prompt_input_widget",
+        )
+    with colp2:
+        st.markdown(f"### 🎯 {framework} Prompt")
+        # Auto-generate framework prompt if framework prompt is empty
+        if not st.session_state.framework_prompt_input and st.session_state.adhoc_prompt_input.strip():
+            st.session_state.framework_prompt_input = build_framework_prompt(framework, st.session_state.adhoc_prompt_input)
+        
+        st.session_state.framework_prompt_input = st.text_area(
+            label=f"{framework} Prompt",
+            value=st.session_state.framework_prompt_input,
+            height=None,
+            label_visibility="collapsed",
+            key="framework_prompt_input_widget",
+        )
     
-    return full_prompt, final_answer, intermediate_data
+    # Run Demo button and results
+    run_button = st.sidebar.button("🚀 Run Demo", type="primary", use_container_width=True)
+    if run_button:
+        task = st.session_state.adhoc_prompt_input
+        framework_task = st.session_state.framework_prompt_input
+        
+        if not task.strip():
+            st.warning("Please enter a Basic Prompt.")
+            return
+        
+        if not framework_task.strip():
+            st.warning("Please enter a Framework Prompt.")
+            return
+        
+        # Call API and display results
+        try:
+            client = get_openai_client()
+            
+            with st.spinner("Running basic approach..."):
+                adhoc_output = call_llm(client, task, model, temperature)
+            
+            with st.spinner(f"Running {framework} framework..."):
+                framework_output = call_llm(client, framework_task, model, temperature)
+                intermediate = None
+            
+            # Display outputs side by side
+            st.markdown("---")
+            st.subheader("📊 Outputs Comparison")
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("### 💬 Basic Output")
+                st.info(adhoc_output)
+            with col2:
+                st.markdown(f"### ✨ {framework} Output")
+                st.success(framework_output)
+                render_intermediate_data(intermediate, framework)
+        except ValueError as e:
+            st.error(f"Validation error: {str(e)}")
+        except Exception as e:
+            st.error(f"An unexpected error occurred: {str(e)}")
 
 
 def main():
     """Main Streamlit application."""
-    st.set_page_config(page_title="AI Prompt Framework Demo", layout="wide")
-
-    # Initialize session state for mode and input
-    if 'mode' not in st.session_state:
-        st.session_state.mode = 'offline'  # start in offline mode by default
-    if 'adhoc_prompt_input' not in st.session_state:
-        st.session_state.adhoc_prompt_input = ""
-
+    setup_page_config()
+    initialize_session_state()
+    
     # Header
     st.title("🧠 AI Prompt Framework Demo")
     st.markdown("""
     Compare how different prompting frameworks transform prompts and affect LLM outputs.
     """)
-
-    # Sidebar controls
-    st.sidebar.header("⚙️ Configuration")
-
+    
     # Mode toggle
     mode = st.sidebar.radio(
         "Mode",
@@ -391,193 +645,56 @@ def main():
         help="Offline mode uses pre-loaded examples. Online mode calls OpenAI API."
     )
     st.session_state.mode = 'offline' if 'Offline' in mode else 'online'
-
+    
     framework = st.sidebar.selectbox(
         "Framework",
-        ["Chain of Thought", "Tree of Thought", "Self-Consistency", "Few-Shot", "Reflection & Revision"]
+        Framework.all()
     )
-
-    # Online mode settings
+    
+    # Detect framework change in online mode
     if st.session_state.mode == 'online':
-        st.sidebar.markdown("---")
-        st.sidebar.subheader("Online Mode Settings")
-
-        model = st.sidebar.selectbox(
-            "Model",
-            ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"],
-            index=1
-        )
-
-        temperature = st.sidebar.slider(
-            "Temperature",
-            min_value=0.0,
-            max_value=2.0,
-            value=0.7,
-            step=0.1
-        )
-
-        num_samples = st.sidebar.number_input(
-            "Number of Samples (Self-Consistency only)",
-            min_value=2,
-            max_value=10,
-            value=3,
-            step=1
-        )
-
-        load_sample_button = st.sidebar.button("📋 Load Sample Prompt", use_container_width=True)
-        if load_sample_button:
-            st.session_state.adhoc_prompt_input = sample_data.SAMPLE_TASKS[framework]
-    else:
-        # Defaults for offline (not used for API calls)
-        model = "gpt-4o-mini"
-        temperature = 0.7
-        num_samples = 3
-
-    # Prompts side-by-side
-    st.markdown("---")
-    st.subheader("📝 Prompts")
-    colp1, colp2 = st.columns(2)
-
+        if st.session_state.previous_framework is not None and st.session_state.previous_framework != framework:
+            if st.session_state.adhoc_prompt_input or st.session_state.framework_prompt_input:
+                st.session_state.show_clear_dialog = True
+        st.session_state.previous_framework = framework
+    
+    # Render sidebar and get settings
+    model, temperature = render_sidebar(framework)
+    
+    # Render appropriate mode
     if st.session_state.mode == 'offline':
-        # Offline mode: pre-load sample task and framework prompt; no editing, no API
-        task = sample_data.SAMPLE_TASKS[framework]
-        adhoc_prompt = task
-        framework_prompt = build_framework_prompt(framework, task)
-
-        with colp1:
-            st.markdown("### 📄 Ad-Hoc Prompt")
-            st.code(adhoc_prompt, language=None)
-        with colp2:
-            st.markdown(f"### 🎯 {framework} Prompt")
-            st.code(framework_prompt, language=None)
-
-        # Immediately show outputs using pre-loaded data
-        st.markdown("---")
-        st.subheader("📊 Outputs Comparison")
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown("### 💬 Ad-Hoc Output")
-            st.info(sample_data.ADHOC_OUTPUTS[framework])
-        with col2:
-            st.markdown(f"### ✨ {framework} Output")
-            st.success(sample_data.FRAMEWORK_OUTPUTS[framework])
-
-            # Intermediate data if applicable
-            intermediate = sample_data.INTERMEDIATE_DATA.get(framework)
-            if intermediate:
-                st.markdown("### 🔍 Intermediate Reasoning")
-                if framework == "Self-Consistency":
-                    tabs = st.tabs([f"Sample {i+1}" for i in range(intermediate["num_samples"])])
-                    for i, tab in enumerate(tabs):
-                        with tab:
-                            st.write(intermediate["samples"][i])
-                elif framework == "Reflection & Revision":
-                    tab1, tab2, tab3 = st.tabs(["Initial Answer", "Critique", "Final Answer"])
-                    with tab1:
-                        st.write(intermediate["initial_answer"])
-                    with tab2:
-                        st.write(intermediate["critique"])
-                    with tab3:
-                        st.write(intermediate["final_answer"])
-
+        render_offline_mode(framework)
     else:
-        # Online mode: editable ad-hoc prompt, auto-generated framework prompt preview
-        with colp1:
-            st.markdown("### 📄 Ad-Hoc Prompt")
-            st.session_state.adhoc_prompt_input = st.text_area(
-                label="Ad-Hoc Prompt",
-                value=st.session_state.adhoc_prompt_input,
-                height=150,
-                label_visibility="collapsed",
-                key="adhoc_prompt_input_widget",
-            )
-        with colp2:
-            st.markdown(f"### 🎯 {framework} Prompt")
-            preview = build_framework_prompt(framework, st.session_state.adhoc_prompt_input) if st.session_state.adhoc_prompt_input.strip() else ""
-            st.text_area(
-                label=f"{framework} Prompt",
-                value=preview,
-                height=150,
-                disabled=True,
-                label_visibility="collapsed",
-                key="framework_prompt_preview_widget",
-            )
-
-        # Run Demo button and results
-        run_button = st.sidebar.button("🚀 Run Demo", type="primary", use_container_width=True)
-        if run_button:
-            task = st.session_state.adhoc_prompt_input
-            if not task.strip():
-                st.warning("Please enter a task or problem statement.")
-                return
-
-            # Call API and display results
-            client = get_openai_client()
-
-            with st.spinner("Running ad-hoc approach..."):
-                adhoc_prompt, adhoc_output = run_adhoc_approach(client, task, model, temperature)
-
-            with st.spinner(f"Running {framework} framework..."):
-                if framework == "Chain of Thought":
-                    framework_prompt, framework_output = run_chain_of_thought(client, task, model, temperature)
-                    intermediate = None
-                elif framework == "Tree of Thought":
-                    framework_prompt, framework_output = run_tree_of_thought(client, task, model, temperature)
-                    intermediate = None
-                elif framework == "Self-Consistency":
-                    framework_prompt, framework_output, intermediate = run_self_consistency(
-                        client, task, model, temperature, num_samples
-                    )
-                elif framework == "Few-Shot":
-                    framework_prompt, framework_output = run_few_shot(client, task, model, temperature)
-                    intermediate = None
-                elif framework == "Reflection & Revision":
-                    framework_prompt, framework_output, intermediate = run_reflection_revision(
-                        client, task, model, temperature
-                    )
-                else:
-                    st.error(f"Unknown framework: {framework}")
-                    return
-
-            # Display outputs side by side
-            st.markdown("---")
-            st.subheader("📊 Outputs Comparison")
-            col1, col2 = st.columns(2)
-            with col1:
-                st.markdown("### 💬 Ad-Hoc Output")
-                st.info(adhoc_output)
-            with col2:
-                st.markdown(f"### ✨ {framework} Output")
-                st.success(framework_output)
-
-                if intermediate:
-                    st.markdown("### 🔍 Intermediate Reasoning")
-                    if framework == "Self-Consistency":
-                        tabs = st.tabs([f"Sample {i+1}" for i in range(intermediate["num_samples"])])
-                        for i, tab in enumerate(tabs):
-                            with tab:
-                                st.write(intermediate["samples"][i])
-                    elif framework == "Reflection & Revision":
-                        tab1, tab2, tab3 = st.tabs(["Initial Answer", "Critique", "Final Answer"])
-                        with tab1:
-                            st.write(intermediate["initial_answer"])
-                        with tab2:
-                            st.write(intermediate["critique"])
-                        with tab3:
-                            st.write(intermediate["final_answer"])
+        render_online_mode(framework, model, temperature)
 
 
 def build_framework_prompt(framework: str, task: str) -> str:
-    """Build the appropriate framework prompt based on the selected framework."""
-    if framework == "Chain of Thought":
+    """Build the appropriate framework prompt based on the selected framework.
+    
+    Args:
+        framework: The framework name (use Framework constants)
+        task: The user's task or problem statement
+        
+    Returns:
+        Enhanced prompt with framework-specific instructions
+        
+    Raises:
+        ValueError: If framework or task is empty/None
+    """
+    if not framework:
+        raise ValueError("Framework must be specified")
+    if not task or not task.strip():
+        raise ValueError("Task cannot be empty")
+    
+    if framework == Framework.CHAIN_OF_THOUGHT:
         return build_chain_of_thought_prompt(task)
-    elif framework == "Tree of Thought":
+    elif framework == Framework.TREE_OF_THOUGHT:
         return build_tree_of_thought_prompt(task)
-    elif framework == "Self-Consistency":
+    elif framework == Framework.SELF_CONSISTENCY:
         return build_self_consistency_prompt(task)
-    elif framework == "Few-Shot":
+    elif framework == Framework.FEW_SHOT:
         return build_few_shot_prompt(task)
-    elif framework == "Reflection & Revision":
+    elif framework == Framework.REFLECTION_REVISION:
         initial = build_reflection_revision_prompt_initial(task)
         critique = "(After receiving initial answer, critique it for weaknesses)"
         revision = "(Based on critique, provide improved answer)"

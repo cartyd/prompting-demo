@@ -3,27 +3,59 @@ Sample data for offline demonstration mode.
 Contains pre-loaded prompts and outputs for each framework.
 """
 
+# Import Framework constants from app
+# Note: This creates a circular dependency but is acceptable for constants
+try:
+    from app import Framework
+except ImportError:
+    # Fallback if app module not available (for standalone testing)
+    class Framework:
+        CHAIN_OF_THOUGHT = "Chain of Thought"
+        TREE_OF_THOUGHT = "Tree of Thought"
+        SELF_CONSISTENCY = "Self-Consistency"
+        FEW_SHOT = "Few-Shot"
+        REFLECTION_REVISION = "Reflection & Revision"
+
 # Sample tasks for each framework
 SAMPLE_TASKS = {
-    "Chain of Thought": "Our department has been asked to reduce operational costs by 15% over the next quarter. We currently spend $200K quarterly on: software licenses ($80K), office supplies ($30K), travel ($50K), external contractors ($40K). Where should we focus our cost-cutting efforts?",
+    Framework.CHAIN_OF_THOUGHT:
+"""Our department has been tasked with reducing operational costs by 15% over the next quarter. We currently spend $200,000 quarterly on the following items: 
+
+ - software licenses ($80,000)
+ - office supplies ($30,000) 
+ - travel ($50,000) 
+ - external contractors ($40,000)
+
+Where should we focus on our cost-cutting efforts?""",
+
+    Framework.TREE_OF_THOUGHT: "Our team missed the last two sprint deadlines. The product manager says we're overcommitting, the developers say requirements keep changing, and QA says they don't have enough time for testing. As the team lead, how do you address this?",
     
-    "Tree of Thought": "Our team missed the last two sprint deadlines. The product manager says we're overcommitting, the developers say requirements keep changing, and QA says they don't have enough time for testing. As the team lead, how do you address this?",
+    Framework.SELF_CONSISTENCY: "A colleague emails you on Friday at 4:30 PM with an 'urgent' request to review a 40-page document before Monday's 9 AM executive meeting. You have dinner plans at 6 PM and a packed weekend. You don't report to this colleague, but they're influential in the company. How do you respond?",
     
-    "Self-Consistency": "A colleague emails you on Friday at 4:30 PM with an 'urgent' request to review a 40-page document before Monday's 9 AM executive meeting. You have dinner plans at 6 PM and a packed weekend. You don't report to this colleague, but they're influential in the company. How do you respond?",
+    Framework.FEW_SHOT: "Write a summary of the Q3 budget review meeting for distribution to stakeholders who couldn't attend.",
     
-    "Few-Shot": "Write a summary of the Q3 budget review meeting for distribution to stakeholders who couldn't attend.",
-    
-    "Reflection & Revision": "Write a performance review self-assessment highlighting your accomplishments this quarter."
+    Framework.REFLECTION_REVISION: "Write a performance review self-assessment highlighting your accomplishments this quarter."
 }
 
 # Ad-hoc outputs for each framework
 ADHOC_OUTPUTS = {
-    "Chain of Thought": "Focus on reducing travel and contractor costs since they're the largest discretionary expenses. Cut travel by 30% and reduce contractor usage by 20%.",
+    Framework.CHAIN_OF_THOUGHT:
+"""You need to cut 15% of $200,000 = $30,000 in the next quarter. The biggest and most flexible buckets are the best focus areas:
+
+-  **Software licenses ($80,000):** Aim for ~$10-12K in savings by removing unused licenses, renegotiating contracts, or consolidating tools.
+
+-  **Travel ($50,000):** Target $8--10K savings by shifting to virtual meetings and tightening policies.
+
+-  **External contractors ($40,000):** Reduce scope or pause non-critical work to save $8-10K.
+
+-  **Office supplies ($30,000):** Possible but limited savings ($2--3K).
+  
+**Overall:** Focus on software, travel, and contractors; use supplies as a minor top-up to reach $30K.""",
+    Framework.TREE_OF_THOUGHT: "Have a team meeting to discuss the issues. Ask everyone to be more realistic about estimates and lock down requirements earlier. Make sure QA is involved from the start.",
     
-    "Tree of Thought": "Have a team meeting to discuss the issues. Ask everyone to be more realistic about estimates and lock down requirements earlier. Make sure QA is involved from the start.",
+    Framework.SELF_CONSISTENCY: "Tell them you have weekend plans but will try to review it Sunday evening. Ask them to highlight the most critical sections.",
     
-    "Self-Consistency": "Tell them you have weekend plans but will try to review it Sunday evening. Ask them to highlight the most critical sections.",
-    
+    Framework.FEW_SHOT:
     "Few-Shot": """Q3 Budget Review Meeting Summary
 
 The meeting covered our Q3 budget performance. We discussed where we overspent and where we saved money. Action items were assigned to various team leads. Overall, we're on track for the year.
@@ -33,7 +65,7 @@ Key points:
 - Cost-saving measures identified
 - Q4 planning discussed""",
     
-    "Reflection & Revision": """This quarter I worked on several important projects and met my goals. I collaborated well with my team and delivered quality work on time. I'm proud of what I accomplished and look forward to taking on more responsibility.
+    Framework.REFLECTION_REVISION: """This quarter I worked on several important projects and met my goals. I collaborated well with my team and delivered quality work on time. I'm proud of what I accomplished and look forward to taking on more responsibility.
 
 Key achievements:
 - Completed all assigned projects
@@ -43,51 +75,95 @@ Key achievements:
 
 # Framework outputs for each framework
 FRAMEWORK_OUTPUTS = {
-    "Chain of Thought": """Let me think through this step by step:
+    Framework.CHAIN_OF_THOUGHT:
 
-**Step 1: Calculate the target reduction**
-- 15% of $200K = $30K reduction needed
+- Current quarterly spend: **$200,000**
+- Required reduction (15%): **$30,000**
 
-**Step 2: Analyze each category by flexibility and business impact**
+  
+#### **2. Quantitative Breakdown**
 
-Software licenses ($80K):
-- Often annual contracts, hard to change mid-term
-- Critical for productivity
-- Low flexibility: ~5% reduction possible = $4K
+|Category					|Current Spend	|% of Total	|Notes              															|
+|------------------------|-------------------|-------------|---------------------------------------------------------|			
+|Software Licenses.   | $80,000          	|40%           | Largest category; often overprovisioned  			|
+|Travel							| $50,000			|25%			|Discrentionary; can be replaced with virtrual alt.	|
+|Ext. Contractors		|$40,000				|20%			|Flexible; may contain non-critical tasks					|
+|Office Supplies			|$30,000				|15%			|Smaller savings potential	
+	
 
-Office supplies ($30K):
-- Moderate flexibility
-- Low business impact if managed well
-- Possible reduction: 20% = $6K
+#### **3. Impact Opportunities**
 
-Travel ($50K):
-- High flexibility
-- Medium business impact (depends on client-facing needs)
-- Possible reduction: 40% through virtual meetings = $20K
+**High Impact**
 
-Contractors ($40K):
-- High flexibility
-- High business impact if they're filling critical gaps
-- Need to assess: are they doing core work or auxiliary projects?
-- Possible reduction: 25% by reprioritizing projects = $10K
+a. _Software licenses (10-14K potential savings)_
 
-**Step 3: Evaluate combinations to reach $30K**
-- Option A: Travel ($20K) + Supplies ($6K) + Software ($4K) = $30K ✓
-- Option B: Contractors ($10K) + Travel ($20K) = $30K ✓
+	Audit unused or lightly used seats
+	Consolidate overlapping tools
+	Renegotiate contracts or shift to lower tiers
+	Consider replacing premium tools with lower-cost alternatives
 
-**Step 4: Assess business impact**
-- Option A spreads cuts across categories, minimizes disruption
-- Option B preserves supplies and software but may impact project delivery
+b. _Travel (8-12K potential savings)_
 
-**Recommendation:**
-Implement Option A:
-1. Reduce travel by 40% ($20K) - mandate virtual-first meetings
-2. Reduce supplies by 20% ($6K) - switch to lower-cost vendors, reduce waste
-3. Optimize software licenses ($4K) - remove unused licenses, negotiate better rates
+	Restrict nonessential travel
+	Require virtual-first meeting policies
+	Implement stricter preapproval steps
 
-This approach minimizes business disruption while achieving the 15% target.""",
+**Medium Impact**
+
+a. _External Contractors (6-10K potential savings)_
+
+	Reduce hours or renegotiate scope
+	Bring lower-skill tasks in-house temporarily
+	Pause non-urgent projects until next quarter
+
+**Low Impact**
+
+a. _Office Supplies: (1-3K)_
+
+	Centralize purchasing to reduce redundant orders
+	Implement usage tracking or quarterly caps
+	Switch to bulk and lower-cost suppliers
+
+  
+
+#### **4. Ranked Action Plan**
+
+1.  **Software Optimization**  (target: $12K savings)
+
+2.  **Reduce Travel** (target: $10K savings)
+
+3.  **Review Contractor Scope** (target: $8K savings)
+
+4.  **Office Supplies Efficiency** (target: $2-3K)
+
+**Total achievable:** $32--35K
+
+  
+
+#### **5. Risks & Mitigations**
+
+1. Software Cuts
+	- Risk: Loss of productivity if tools are removed too aggressively
+	- Mitigation: Prioritize unused or duplicated tools; run pilot tests before full removal
+
+2. Reduced Travel
+	-   Risk: Stakeholder or customer relationship degradation
+	- Mitigation: Use high-quality virtual meetings and hybrid travel approach
+
+3. Contractor Reductions
+	-  Risk: Delays in project timelines
+	- Mitigation: Focus cuts on non-critical projects; redistribute tasks internally
+	- 
+4. Office Supply Reductions
+	- Risk: Low morale if cuts are perceived as excessive
+	- Mitigation: Communicate focus on eliminating waste, not restricting essential equipment
+
+
+### Final Recommendation
+
+You can most effectively reach the $30K savings target by focusing on software, travel, and contractor costs. These categories are both large and flexible enough to support meaningful reductions without impairing operations. Office supplies serve as a small "top-up" if needed.""",
     
-    "Tree of Thought": """Let me explore multiple approaches to this problem:
+    Framework.TREE_OF_THOUGHT: """Let me explore multiple approaches to this problem:
 
 **Branch 1: Process-Focused Approach**
 - Root cause: Lack of clear process and planning
@@ -137,7 +213,7 @@ Which branch provides the most robust solution?
 
 This approach acknowledges the capacity issue while improving process and communication.""",
     
-    "Self-Consistency": """All three samples share common elements: setting boundaries, offering alternatives, and seeking clarity. The optimal response combines these:
+    Framework.SELF_CONSISTENCY: """All three samples share common elements: setting boundaries, offering alternatives, and seeking clarity. The optimal response combines these:
 
 'I appreciate you thinking of me for this review. I have personal commitments this weekend, but I want to help you prepare for Monday's meeting.
 
@@ -155,7 +231,7 @@ This response:
 - Puts the ball back in their court to assess true urgency
 - Preserves your weekend while showing willingness to help""",
     
-    "Few-Shot": """Subject: [SUMMARY] Q3 Budget Review - Variance Analysis & Q4 Adjustments
+    Framework.FEW_SHOT: """Subject: [SUMMARY] Q3 Budget Review - Variance Analysis & Q4 Adjustments
 
 Key Decisions:
 • Approved 12% budget increase for Sales ($45K) to support Q4 pipeline acceleration
@@ -183,7 +259,7 @@ Next Steps: Q4 budget adjustments finalized in next week's executive meeting
 
 Attachments: Q3_Variance_Report.xlsx, Q4_Budget_Scenarios.pdf""",
     
-    "Reflection & Revision": """Q3 Self-Assessment - Accomplishments
+    Framework.REFLECTION_REVISION: """Q3 Self-Assessment - Accomplishments
 
 **1. Customer Portal Redesign - Drove Revenue Impact**
 
@@ -257,7 +333,7 @@ Given these results, I'm ready to take on increased scope. Specifically interest
 
 # Intermediate data for frameworks that need it
 INTERMEDIATE_DATA = {
-    "Self-Consistency": {
+    Framework.SELF_CONSISTENCY: {
         "samples": [
             "I can do a high-level review of the executive summary and key recommendations Monday morning at 7 AM, which would give you feedback before the 9 AM meeting. For a thorough review of the full document, I'd need until Tuesday. Which would be more valuable?",
             "I have personal commitments this weekend. Can you help me understand what specifically needs review? If there are 3-4 critical sections, I can prioritize those for early Monday. Otherwise, I can provide comprehensive feedback by Tuesday afternoon.",
@@ -265,7 +341,7 @@ INTERMEDIATE_DATA = {
         ],
         "num_samples": 3
     },
-    "Reflection & Revision": {
+    Framework.REFLECTION_REVISION: {
         "initial_answer": """Q3 Self-Assessment - Accomplishments
 
 This quarter I made significant contributions to our team's success:
@@ -300,6 +376,6 @@ Weaknesses:
 - Mentorship claim lacks details on outcomes
 - Process improvement mentioned but impact not quantified""",
         
-        "final_answer": FRAMEWORK_OUTPUTS["Reflection & Revision"]
+        "final_answer": FRAMEWORK_OUTPUTS[Framework.REFLECTION_REVISION]
     }
 }
