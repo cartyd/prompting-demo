@@ -141,7 +141,7 @@ streamlit run app.py
 To add your own examples to offline mode, edit `sample_data.py`:
 
 1. Add task to `SAMPLE_TASKS` dict
-2. Add ad-hoc output to `ADHOC_OUTPUTS` dict
+2. Add ad-hoc output to `BASIC_OUTPUTS` dict
 3. Add framework output to `FRAMEWORK_OUTPUTS` dict
 4. (Optional) Add intermediate data to `INTERMEDIATE_DATA` dict
 

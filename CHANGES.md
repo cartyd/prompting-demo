@@ -38,7 +38,7 @@
 
 ### Session State
 - `st.session_state.mode`: Tracks current mode ('offline' or 'online')
-- `st.session_state.adhoc_prompt_input`: Stores user input in online mode
+- `st.session_state.basic_prompt_input`: Stores user input in online mode
 
 ### No API Calls in Offline Mode
 - Offline mode directly displays pre-loaded data from `sample_data.py`

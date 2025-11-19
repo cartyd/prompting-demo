@@ -70,7 +70,7 @@ Step 3 - Revision Prompt:
 FRAMEWORK_PROMPTS = _build_framework_prompts()
 
 # Ad-hoc outputs for each framework
-ADHOC_OUTPUTS = {
+BASIC_OUTPUTS = {
     FRAMEWORK_CHAIN_OF_THOUGHT:
 """You need to cut 15% of $200,000 = $30,000 in the next quarter. The biggest and most flexible buckets are the best focus areas:
 
@@ -272,7 +272,7 @@ Key Decisions:
 Outcomes:
 • Overall Q3 variance: -2.3% under budget ($68K savings)
 • Engineering 8% over budget due to unexpected cloud costs
-• Operations achieved 15&percent savings through vendor renegotiations
+• Operations achieved 15% savings through vendor renegotiations
 
 Department Highlights:
 • Sales: 94% of budget utilized, strong ROI on trade shows

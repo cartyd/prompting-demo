@@ -142,9 +142,9 @@ def get_sample_task(framework: str) -> str:
     return _get_sample_data(framework, sample_data.SAMPLE_TASKS, "sample task")
 
 
-def get_adhoc_output(framework: str) -> str:
-    """Get adhoc output for a framework."""
-    return _get_sample_data(framework, sample_data.ADHOC_OUTPUTS, "adhoc output")
+def get_basic_output(framework: str) -> str:
+    """Get basic output for a framework."""
+    return _get_sample_data(framework, sample_data.BASIC_OUTPUTS, "basic output")
 
 
 def get_framework_output(framework: str) -> str:
@@ -240,7 +240,7 @@ def initialize_session_state():
     """Initialize all session state variables with default values."""
     defaults = {
         'mode': 'offline',
-        'adhoc_prompt_input': '',
+        'basic_prompt_input': '',
         'framework_prompt_input': '',
         'previous_framework': None,
         'show_clear_dialog': False
@@ -267,7 +267,7 @@ def render_sidebar(framework: str) -> tuple:
             col1, col2 = st.sidebar.columns(2)
             with col1:
                 if st.button("Yes", key="clear_yes", use_container_width=True):
-                    st.session_state.adhoc_prompt_input = ""
+                    st.session_state.basic_prompt_input = ""
                     st.session_state.framework_prompt_input = ""
                     st.session_state.show_clear_dialog = False
                     st.rerun()
@@ -297,14 +297,14 @@ def render_sidebar(framework: str) -> tuple:
         if load_sample_button:
             try:
                 sample_task = get_sample_task(framework)
-                st.session_state.adhoc_prompt_input = sample_task
+                st.session_state.basic_prompt_input = sample_task
                 st.session_state.framework_prompt_input = build_framework_prompt(framework, sample_task)
             except ValueError as e:
                 st.error(str(e))
         
         clear_button = st.sidebar.button("🗑️ Clear All Text", use_container_width=True)
         if clear_button:
-            st.session_state.adhoc_prompt_input = ""
+            st.session_state.basic_prompt_input = ""
             st.session_state.framework_prompt_input = ""
     else:
         # Defaults for offline mode
@@ -340,7 +340,7 @@ def render_offline_mode(framework: str):
     try:
         # Get sample data
         task = get_sample_task(framework)
-        adhoc_prompt = task
+        basic_prompt = task
         framework_prompt = get_framework_prompt(framework)
         
         # Display prompts
@@ -350,7 +350,7 @@ def render_offline_mode(framework: str):
         
         with colp1:
             st.markdown("### 📄 Basic Prompt")
-            st.code(adhoc_prompt, language=None)
+            st.code(basic_prompt, language=None)
         with colp2:
             st.markdown(f"### 🎯 {framework} Prompt")
             st.code(framework_prompt, language=None)
@@ -362,7 +362,7 @@ def render_offline_mode(framework: str):
         
         with col1:
             st.markdown("### 💬 Basic Output")
-            st.markdown(f'<div class="output-container output-basic">{escape_for_display(get_adhoc_output(framework))}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="output-container output-basic">{escape_for_display(get_basic_output(framework))}</div>', unsafe_allow_html=True)
         with col2:
             st.markdown(f"### ✨ {framework} Output")
             st.markdown(f'<div class="output-container output-framework">{escape_for_display(get_framework_output(framework))}</div>', unsafe_allow_html=True)
@@ -385,18 +385,18 @@ def render_online_mode(framework: str, model: str, temperature: float):
     
     with colp1:
         st.markdown("### 📄 Basic Prompt")
-        st.session_state.adhoc_prompt_input = st.text_area(
+        st.session_state.basic_prompt_input = st.text_area(
             label="Basic Prompt",
-            value=st.session_state.adhoc_prompt_input,
+            value=st.session_state.basic_prompt_input,
             height=None,
             label_visibility="collapsed",
-            key="adhoc_prompt_input_widget",
+            key="basic_prompt_input_widget",
         )
     with colp2:
         st.markdown(f"### 🎯 {framework} Prompt")
         # Auto-generate framework prompt if framework prompt is empty
-        if not st.session_state.framework_prompt_input and st.session_state.adhoc_prompt_input.strip():
-            st.session_state.framework_prompt_input = build_framework_prompt(framework, st.session_state.adhoc_prompt_input)
+        if not st.session_state.framework_prompt_input and st.session_state.basic_prompt_input.strip():
+            st.session_state.framework_prompt_input = build_framework_prompt(framework, st.session_state.basic_prompt_input)
         
         st.session_state.framework_prompt_input = st.text_area(
             label=f"{framework} Prompt",
@@ -409,7 +409,7 @@ def render_online_mode(framework: str, model: str, temperature: float):
     # Run Demo button and results
     run_button = st.sidebar.button("🚀 Run Demo", type="primary", use_container_width=True)
     if run_button:
-        task = st.session_state.adhoc_prompt_input
+        task = st.session_state.basic_prompt_input
         framework_task = st.session_state.framework_prompt_input
         
         if not task.strip():
@@ -425,7 +425,7 @@ def render_online_mode(framework: str, model: str, temperature: float):
             client = get_openai_client()
             
             with st.spinner("Running basic approach..."):
-                adhoc_output = call_llm(client, task, model, temperature)
+                basic_output = call_llm(client, task, model, temperature)
             
             with st.spinner(f"Running {framework} framework..."):
                 framework_output = call_llm(client, framework_task, model, temperature)
@@ -438,7 +438,7 @@ def render_online_mode(framework: str, model: str, temperature: float):
             
             with col1:
                 st.markdown("### 💬 Basic Output")
-                st.markdown(f'<div class="output-container output-basic">{escape_for_display(adhoc_output)}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="output-container output-basic">{escape_for_display(basic_output)}</div>', unsafe_allow_html=True)
             with col2:
                 st.markdown(f"### ✨ {framework} Output")
                 st.markdown(f'<div class="output-container output-framework">{escape_for_display(framework_output)}</div>', unsafe_allow_html=True)
@@ -477,7 +477,7 @@ def main():
     # Detect framework change in online mode
     if st.session_state.mode == 'online':
         if st.session_state.previous_framework is not None and st.session_state.previous_framework != framework:
-            if st.session_state.adhoc_prompt_input or st.session_state.framework_prompt_input:
+            if st.session_state.basic_prompt_input or st.session_state.framework_prompt_input:
                 st.session_state.show_clear_dialog = True
         st.session_state.previous_framework = framework
     
