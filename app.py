@@ -11,12 +11,13 @@ Supports two modes:
 
 import streamlit as st
 from openai import OpenAI
-from typing import List, Dict, Any, Tuple, Optional
+from typing import Dict, Any, Optional
 import os
 from dotenv import load_dotenv
 import sample_data
 import streamlit.components.v1 as components
-from constants import Framework, TEXTAREA_RESIZE_INTERVAL_MS
+from constants import Framework, TEXTAREA_RESIZE_INTERVAL_MS, AVAILABLE_MODELS
+import prompt_templates as templates
 
 # Load environment variables from .env file
 load_dotenv()
@@ -79,17 +80,7 @@ def build_chain_of_thought_prompt(task: str) -> str:
     Returns:
         Chain of Thought enhanced prompt
     """
-    return f"""{task}
-
-Let's approach this step-by-step:
-
-1. First, identify the key components and requirements
-2. Break down the problem into manageable parts
-3. Analyze each part systematically
-4. Consider relationships and dependencies
-5. Synthesize findings into a coherent solution
-
-Provide your reasoning for each step."""
+    return f"{task}{templates.CHAIN_OF_THOUGHT_INSTRUCTIONS}"
 
 
 def build_tree_of_thought_prompt(task: str) -> str:
@@ -102,31 +93,7 @@ def build_tree_of_thought_prompt(task: str) -> str:
     Returns:
         Tree of Thought enhanced prompt
     """
-    return f"""{task}
-
-Let's explore multiple approaches to this problem:
-
-Branch 1: Consider the most direct approach
-- What is the straightforward solution?
-- What are its advantages?
-- What are its limitations?
-
-Branch 2: Consider an alternative creative approach
-- What's a different way to think about this?
-- What unique insights does this provide?
-- What trade-offs does this involve?
-
-Branch 3: Consider a hybrid or optimal approach
-- Can we combine the best of both previous approaches?
-- What would be the most comprehensive solution?
-- What makes this approach superior?
-
-Now, evaluate each branch:
-- Which branch provides the most robust solution?
-- Why is this branch preferable?
-- What is your final recommended approach?
-
-Provide your complete reasoning and final answer."""
+    return f"{task}{templates.TREE_OF_THOUGHT_INSTRUCTIONS}"
 
 
 def build_self_consistency_prompt(task: str) -> str:
@@ -139,9 +106,7 @@ def build_self_consistency_prompt(task: str) -> str:
     Returns:
         Prompt designed for self-consistency sampling
     """
-    return f"""{task}
-
-Please provide your reasoning and answer to this problem. Think through it carefully and explain your thought process."""
+    return f"{task}{templates.SELF_CONSISTENCY_INSTRUCTIONS}"
 
 
 def build_few_shot_prompt(task: str) -> str:
@@ -154,29 +119,7 @@ def build_few_shot_prompt(task: str) -> str:
     Returns:
         Few-shot enhanced prompt with examples
     """
-    return f"""Here are some examples of how to approach similar problems:
-
-Example 1:
-Task: Calculate the total cost if I buy 3 apples at $2 each and 2 oranges at $3 each.
-Solution: Let me break this down:
-- Apples: 3 × $2 = $6
-- Oranges: 2 × $3 = $6
-- Total: $6 + $6 = $12
-Answer: The total cost is $12.
-
-Example 2:
-Task: If a train travels 120 miles in 2 hours, what is its average speed?
-Solution: To find average speed, I need to divide distance by time:
-- Distance: 120 miles
-- Time: 2 hours
-- Speed = Distance ÷ Time = 120 ÷ 2 = 60 miles per hour
-Answer: The average speed is 60 mph.
-
-Now, solve this problem using the same step-by-step approach:
-
-Task: {task}
-
-Solution:"""
+    return templates.FEW_SHOT_EXAMPLES.format(task=task)
 
 
 def build_reflection_revision_prompt_initial(task: str) -> str:
@@ -189,9 +132,7 @@ def build_reflection_revision_prompt_initial(task: str) -> str:
     Returns:
         Initial prompt
     """
-    return f"""{task}
-
-Please provide your answer to this problem."""
+    return f"{task}{templates.REFLECTION_REVISION_INITIAL}"
 
 
 def build_reflection_revision_prompt_critique(task: str, initial_answer: str) -> str:
@@ -205,18 +146,7 @@ def build_reflection_revision_prompt_critique(task: str, initial_answer: str) ->
     Returns:
         Critique prompt
     """
-    return f"""Original task: {task}
-
-Here was my initial answer:
-{initial_answer}
-
-Now, critically analyze this answer:
-- What are the strengths of this answer?
-- What are the weaknesses or potential errors?
-- What might be missing or incomplete?
-- How could this answer be improved?
-
-Provide a detailed critique."""
+    return templates.REFLECTION_REVISION_CRITIQUE.format(task=task, initial_answer=initial_answer)
 
 
 def build_reflection_revision_prompt_revision(task: str, initial_answer: str, critique: str) -> str:
@@ -231,15 +161,11 @@ def build_reflection_revision_prompt_revision(task: str, initial_answer: str, cr
     Returns:
         Revision prompt
     """
-    return f"""Original task: {task}
-
-Initial answer:
-{initial_answer}
-
-Critique of the initial answer:
-{critique}
-
-Based on this critique, provide an improved, revised answer that addresses the identified weaknesses and incorporates the suggested improvements."""
+    return templates.REFLECTION_REVISION_REVISION.format(
+        task=task, 
+        initial_answer=initial_answer, 
+        critique=critique
+    )
 
 
 # Simple functions to access sample data - no class needed
@@ -424,7 +350,7 @@ def render_sidebar(framework: str) -> tuple:
         
         model = st.sidebar.selectbox(
             "Model",
-            ["gpt-5", "gpt-5-mini", "gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"],
+            AVAILABLE_MODELS,
             index=2
         )
         

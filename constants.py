@@ -26,5 +26,15 @@ class Framework:
         ]
 
 
+# Available OpenAI models for selection in online mode
+AVAILABLE_MODELS = [
+    "gpt-5",
+    "gpt-5-mini",
+    "gpt-4o",
+    "gpt-4o-mini",
+    "gpt-4-turbo",
+    "gpt-3.5-turbo"
+]
+
 # Interval for checking textarea resize in milliseconds
 TEXTAREA_RESIZE_INTERVAL_MS = 100
