@@ -169,6 +169,24 @@ def setup_page_config():
         overflow: hidden !important;
         min-height: 100px !important;
     }
+    /* Style for output containers */
+    .output-container {
+        font-size: 2rem !important;
+        line-height: 1.6 !important;
+        white-space: pre-wrap !important;
+        word-wrap: break-word !important;
+        font-family: monospace;
+        padding: 1rem;
+        border-radius: 0.5rem;
+    }
+    .output-basic {
+        background-color: #d1ecf1;
+        border: 1px solid #bee5eb;
+    }
+    .output-framework {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+    }
     </style>
     """, unsafe_allow_html=True)
     
@@ -323,10 +341,10 @@ def render_offline_mode(framework: str):
         
         with col1:
             st.markdown("### 💬 Basic Output")
-            st.markdown(get_adhoc_output(framework))
+            st.markdown(f'<div class="output-container output-basic">{get_adhoc_output(framework)}</div>', unsafe_allow_html=True)
         with col2:
             st.markdown(f"### ✨ {framework} Output")
-            st.markdown(get_framework_output(framework))
+            st.markdown(f'<div class="output-container output-framework">{get_framework_output(framework)}</div>', unsafe_allow_html=True)
             
             # Intermediate data if applicable
             intermediate = get_intermediate_data(framework)
@@ -399,10 +417,10 @@ def render_online_mode(framework: str, model: str, temperature: float):
             
             with col1:
                 st.markdown("### 💬 Basic Output")
-                st.markdown(adhoc_output)
+                st.markdown(f'<div class="output-container output-basic">{adhoc_output}</div>', unsafe_allow_html=True)
             with col2:
                 st.markdown(f"### ✨ {framework} Output")
-                st.markdown(framework_output)
+                st.markdown(f'<div class="output-container output-framework">{framework_output}</div>', unsafe_allow_html=True)
                 render_intermediate_data(intermediate, framework)
         except ValueError as e:
             st.error(f"Validation error: {str(e)}")
