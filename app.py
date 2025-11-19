@@ -305,15 +305,15 @@ def render_intermediate_data(intermediate: Dict[str, Any], framework: str):
         tabs = st.tabs([f"Sample {i+1}" for i in range(intermediate["num_samples"])])
         for i, tab in enumerate(tabs):
             with tab:
-                st.write(intermediate["samples"][i])
+                st.markdown(f'<div class="output-container output-framework">{html.escape(intermediate["samples"][i])}</div>', unsafe_allow_html=True)
     elif framework == FRAMEWORK_REFLECTION_REVISION:
         tab1, tab2, tab3 = st.tabs(["Initial Answer", "Critique", "Final Answer"])
         with tab1:
-            st.write(intermediate["initial_answer"])
+            st.markdown(f'<div class="output-container output-framework">{html.escape(intermediate["initial_answer"])}</div>', unsafe_allow_html=True)
         with tab2:
-            st.write(intermediate["critique"])
+            st.markdown(f'<div class="output-container output-framework">{html.escape(intermediate["critique"])}</div>', unsafe_allow_html=True)
         with tab3:
-            st.write(intermediate["final_answer"])
+            st.markdown(f'<div class="output-container output-framework">{html.escape(intermediate["final_answer"])}</div>', unsafe_allow_html=True)
 
 
 def render_offline_mode(framework: str):
