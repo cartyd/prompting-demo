@@ -79,184 +79,67 @@ def call_llm(client: OpenAI, prompt: str, model: str, temperature: float = 0.7) 
 
 
 
-def build_chain_of_thought_prompt(task: str) -> str:
-    """
-    Build a Chain of Thought prompt.
-    
-    Args:
-        task: User's task or problem statement
-        
-    Returns:
-        Chain of Thought enhanced prompt
-    """
-    return f"{task}{templates.CHAIN_OF_THOUGHT_INSTRUCTIONS}"
+# Framework prompt builders - mapping framework to template
+_FRAMEWORK_BUILDERS = {
+    FRAMEWORK_CHAIN_OF_THOUGHT: lambda task: f"{task}{templates.CHAIN_OF_THOUGHT_INSTRUCTIONS}",
+    FRAMEWORK_TREE_OF_THOUGHT: lambda task: f"{task}{templates.TREE_OF_THOUGHT_INSTRUCTIONS}",
+    FRAMEWORK_SELF_CONSISTENCY: lambda task: f"{task}{templates.SELF_CONSISTENCY_INSTRUCTIONS}",
+    FRAMEWORK_FEW_SHOT: lambda task: templates.FEW_SHOT_EXAMPLES.format(task=task),
+    FRAMEWORK_REFLECTION_REVISION: lambda task: f"""Step 1 - Initial Answer Prompt:
+{task}{templates.REFLECTION_REVISION_INITIAL}
+
+Step 2 - Critique Prompt:
+(After receiving initial answer, critique it for weaknesses)
+
+Step 3 - Revision Prompt:
+(Based on critique, provide improved answer)"""
+}
 
 
-def build_tree_of_thought_prompt(task: str) -> str:
-    """
-    Build a Tree of Thought prompt that explores multiple reasoning paths.
-    
-    Args:
-        task: User's task or problem statement
-        
-    Returns:
-        Tree of Thought enhanced prompt
-    """
-    return f"{task}{templates.TREE_OF_THOUGHT_INSTRUCTIONS}"
-
-
-def build_self_consistency_prompt(task: str) -> str:
-    """
-    Build a Self-Consistency prompt (will be called multiple times).
-    
-    Args:
-        task: User's task or problem statement
-        
-    Returns:
-        Prompt designed for self-consistency sampling
-    """
-    return f"{task}{templates.SELF_CONSISTENCY_INSTRUCTIONS}"
-
-
-def build_few_shot_prompt(task: str) -> str:
-    """
-    Build a Few-Shot prompt with example demonstrations.
-    
-    Args:
-        task: User's task or problem statement
-        
-    Returns:
-        Few-shot enhanced prompt with examples
-    """
-    return templates.FEW_SHOT_EXAMPLES.format(task=task)
-
-
-def build_reflection_revision_prompt_initial(task: str) -> str:
-    """
-    Build the initial prompt for Reflection & Revision framework.
-    
-    Args:
-        task: User's task or problem statement
-        
-    Returns:
-        Initial prompt
-    """
-    return f"{task}{templates.REFLECTION_REVISION_INITIAL}"
-
-
-def build_reflection_revision_prompt_critique(task: str, initial_answer: str) -> str:
-    """
-    Build the critique prompt for Reflection & Revision framework.
-    
-    Args:
-        task: Original task
-        initial_answer: The first answer from the LLM
-        
-    Returns:
-        Critique prompt
-    """
-    return templates.REFLECTION_REVISION_CRITIQUE.format(task=task, initial_answer=initial_answer)
-
-
-def build_reflection_revision_prompt_revision(task: str, initial_answer: str, critique: str) -> str:
-    """
-    Build the revision prompt for Reflection & Revision framework.
-    
-    Args:
-        task: Original task
-        initial_answer: The first answer
-        critique: The critique of the first answer
-        
-    Returns:
-        Revision prompt
-    """
-    return templates.REFLECTION_REVISION_REVISION.format(
-        task=task, 
-        initial_answer=initial_answer, 
-        critique=critique
-    )
-
-
-# Simple functions to access sample data - no class needed
-
-def get_sample_task(framework: str) -> str:
-    """Get sample task for a framework.
+# Generic sample data accessor
+def _get_sample_data(framework: str, data_dict: dict, data_name: str):
+    """Generic function to access sample data dictionaries.
     
     Args:
         framework: Framework name
+        data_dict: Dictionary to access
+        data_name: Name of data type for error messages
         
     Returns:
-        Sample task string
+        Data from dictionary
         
     Raises:
         ValueError: If framework not found
     """
-    if framework not in sample_data.SAMPLE_TASKS:
-        raise ValueError(f"No sample task found for framework: {framework}")
-    return sample_data.SAMPLE_TASKS[framework]
+    if framework not in data_dict:
+        raise ValueError(f"No {data_name} found for framework: {framework}")
+    return data_dict[framework]
+
+
+# Convenience accessors using the generic function
+def get_sample_task(framework: str) -> str:
+    """Get sample task for a framework."""
+    return _get_sample_data(framework, sample_data.SAMPLE_TASKS, "sample task")
 
 
 def get_adhoc_output(framework: str) -> str:
-    """Get adhoc output for a framework.
-    
-    Args:
-        framework: Framework name
-        
-    Returns:
-        Adhoc output string
-        
-    Raises:
-        ValueError: If framework not found
-    """
-    if framework not in sample_data.ADHOC_OUTPUTS:
-        raise ValueError(f"No adhoc output found for framework: {framework}")
-    return sample_data.ADHOC_OUTPUTS[framework]
+    """Get adhoc output for a framework."""
+    return _get_sample_data(framework, sample_data.ADHOC_OUTPUTS, "adhoc output")
 
 
 def get_framework_output(framework: str) -> str:
-    """Get framework output for a framework.
-    
-    Args:
-        framework: Framework name
-        
-    Returns:
-        Framework output string
-        
-    Raises:
-        ValueError: If framework not found
-    """
-    if framework not in sample_data.FRAMEWORK_OUTPUTS:
-        raise ValueError(f"No framework output found for framework: {framework}")
-    return sample_data.FRAMEWORK_OUTPUTS[framework]
-
-
-def get_intermediate_data(framework: str) -> Optional[Dict[str, Any]]:
-    """Get intermediate data for a framework if it exists.
-    
-    Args:
-        framework: Framework name
-        
-    Returns:
-        Intermediate data dict or None if not available
-    """
-    return sample_data.INTERMEDIATE_DATA.get(framework)
+    """Get framework output for a framework."""
+    return _get_sample_data(framework, sample_data.FRAMEWORK_OUTPUTS, "framework output")
 
 
 def get_framework_prompt(framework: str) -> str:
-    """Get the framework-enhanced prompt for a framework.
-    
-    Args:
-        framework: Framework name
-        
-    Returns:
-        Framework prompt string
-        
-    Raises:
-        ValueError: If framework not found
-    """
-    if framework not in sample_data.FRAMEWORK_PROMPTS:
-        raise ValueError(f"No framework prompt found for framework: {framework}")
-    return sample_data.FRAMEWORK_PROMPTS[framework]
+    """Get the framework-enhanced prompt for a framework."""
+    return _get_sample_data(framework, sample_data.FRAMEWORK_PROMPTS, "framework prompt")
+
+
+def get_intermediate_data(framework: str) -> Optional[Dict[str, Any]]:
+    """Get intermediate data for a framework if it exists."""
+    return sample_data.INTERMEDIATE_DATA.get(framework)
 
 
 def setup_page_config():
@@ -573,7 +456,7 @@ def build_framework_prompt(framework: str, task: str) -> str:
     """Build the appropriate framework prompt based on the selected framework.
     
     Args:
-        framework: The framework name (use Framework constants)
+        framework: The framework name (use framework constants)
         task: The user's task or problem statement
         
     Returns:
@@ -587,26 +470,12 @@ def build_framework_prompt(framework: str, task: str) -> str:
     if not task or not task.strip():
         raise ValueError("Task cannot be empty")
     
-    if framework == FRAMEWORK_CHAIN_OF_THOUGHT:
-        return build_chain_of_thought_prompt(task)
-    elif framework == FRAMEWORK_TREE_OF_THOUGHT:
-        return build_tree_of_thought_prompt(task)
-    elif framework == FRAMEWORK_SELF_CONSISTENCY:
-        return build_self_consistency_prompt(task)
-    elif framework == FRAMEWORK_FEW_SHOT:
-        return build_few_shot_prompt(task)
-    elif framework == FRAMEWORK_REFLECTION_REVISION:
-        initial = build_reflection_revision_prompt_initial(task)
-        critique = "(After receiving initial answer, critique it for weaknesses)"
-        revision = "(Based on critique, provide improved answer)"
-        return f"""Step 1 - Initial Answer Prompt:
-{initial}
-
-Step 2 - Critique Prompt:
-{critique}
-
-Step 3 - Revision Prompt:
-{revision}"""
+    # Use dictionary mapping instead of if/elif chain
+    builder = _FRAMEWORK_BUILDERS.get(framework)
+    if builder:
+        return builder(task)
+    
+    # Fallback to task if framework not recognized
     return task
 
 
