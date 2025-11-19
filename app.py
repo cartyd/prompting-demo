@@ -27,6 +27,7 @@ from constants import (
     AVAILABLE_MODELS
 )
 import prompt_templates as templates
+import html
 
 # Load environment variables from .env file
 load_dotenv()
@@ -342,10 +343,10 @@ def render_offline_mode(framework: str):
         
         with col1:
             st.markdown("### 💬 Basic Output")
-            st.markdown(f'<div class="output-container output-basic">{get_adhoc_output(framework)}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="output-container output-basic">{html.escape(get_adhoc_output(framework))}</div>', unsafe_allow_html=True)
         with col2:
             st.markdown(f"### ✨ {framework} Output")
-            st.markdown(f'<div class="output-container output-framework">{get_framework_output(framework)}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="output-container output-framework">{html.escape(get_framework_output(framework))}</div>', unsafe_allow_html=True)
             
             # Intermediate data if applicable
             intermediate = get_intermediate_data(framework)
@@ -418,10 +419,10 @@ def render_online_mode(framework: str, model: str, temperature: float):
             
             with col1:
                 st.markdown("### 💬 Basic Output")
-                st.markdown(f'<div class="output-container output-basic">{adhoc_output}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="output-container output-basic">{html.escape(adhoc_output)}</div>', unsafe_allow_html=True)
             with col2:
                 st.markdown(f"### ✨ {framework} Output")
-                st.markdown(f'<div class="output-container output-framework">{framework_output}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="output-container output-framework">{html.escape(framework_output)}</div>', unsafe_allow_html=True)
                 render_intermediate_data(intermediate, framework)
         except ValueError as e:
             st.error(f"Validation error: {str(e)}")
