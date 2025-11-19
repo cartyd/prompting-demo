@@ -29,6 +29,25 @@ from constants import (
 import prompt_templates as templates
 import html
 
+
+def escape_for_display(text: str) -> str:
+    """Escape text for safe HTML display, including $ character.
+    
+    html.escape() doesn't escape $ which triggers LaTeX math mode in Streamlit.
+    This function escapes $ as well as standard HTML entities.
+    
+    Args:
+        text: Text to escape
+        
+    Returns:
+        Escaped text safe for HTML display
+    """
+    # First escape standard HTML special characters (<, >, &, ", ')
+    text = html.escape(text)
+    # Then escape $ to prevent LaTeX math mode interpretation
+    text = text.replace('$', '&#36;')
+    return text
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -305,15 +324,15 @@ def render_intermediate_data(intermediate: Dict[str, Any], framework: str):
         tabs = st.tabs([f"Sample {i+1}" for i in range(intermediate["num_samples"])])
         for i, tab in enumerate(tabs):
             with tab:
-                st.markdown(f'<div class="output-container output-framework">{html.escape(intermediate["samples"][i])}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="output-container output-framework">{escape_for_display(intermediate["samples"][i])}</div>', unsafe_allow_html=True)
     elif framework == FRAMEWORK_REFLECTION_REVISION:
         tab1, tab2, tab3 = st.tabs(["Initial Answer", "Critique", "Final Answer"])
         with tab1:
-            st.markdown(f'<div class="output-container output-framework">{html.escape(intermediate["initial_answer"])}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="output-container output-framework">{escape_for_display(intermediate["initial_answer"])}</div>', unsafe_allow_html=True)
         with tab2:
-            st.markdown(f'<div class="output-container output-framework">{html.escape(intermediate["critique"])}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="output-container output-framework">{escape_for_display(intermediate["critique"])}</div>', unsafe_allow_html=True)
         with tab3:
-            st.markdown(f'<div class="output-container output-framework">{html.escape(intermediate["final_answer"])}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="output-container output-framework">{escape_for_display(intermediate["final_answer"])}</div>', unsafe_allow_html=True)
 
 
 def render_offline_mode(framework: str):
@@ -343,10 +362,10 @@ def render_offline_mode(framework: str):
         
         with col1:
             st.markdown("### 💬 Basic Output")
-            st.markdown(f'<div class="output-container output-basic">{html.escape(get_adhoc_output(framework))}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="output-container output-basic">{escape_for_display(get_adhoc_output(framework))}</div>', unsafe_allow_html=True)
         with col2:
             st.markdown(f"### ✨ {framework} Output")
-            st.markdown(f'<div class="output-container output-framework">{html.escape(get_framework_output(framework))}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="output-container output-framework">{escape_for_display(get_framework_output(framework))}</div>', unsafe_allow_html=True)
             
             # Intermediate data if applicable
             intermediate = get_intermediate_data(framework)
@@ -419,10 +438,10 @@ def render_online_mode(framework: str, model: str, temperature: float):
             
             with col1:
                 st.markdown("### 💬 Basic Output")
-                st.markdown(f'<div class="output-container output-basic">{html.escape(adhoc_output)}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="output-container output-basic">{escape_for_display(adhoc_output)}</div>', unsafe_allow_html=True)
             with col2:
                 st.markdown(f"### ✨ {framework} Output")
-                st.markdown(f'<div class="output-container output-framework">{html.escape(framework_output)}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="output-container output-framework">{escape_for_display(framework_output)}</div>', unsafe_allow_html=True)
                 render_intermediate_data(intermediate, framework)
         except ValueError as e:
             st.error(f"Validation error: {str(e)}")

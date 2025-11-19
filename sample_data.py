@@ -272,7 +272,7 @@ Key Decisions:
 Outcomes:
 • Overall Q3 variance: -2.3% under budget ($68K savings)
 • Engineering 8% over budget due to unexpected cloud costs
-• Operations achieved 15% savings through vendor renegotiations
+• Operations achieved 15&percent savings through vendor renegotiations
 
 Department Highlights:
 • Sales: 94% of budget utilized, strong ROI on trade shows
