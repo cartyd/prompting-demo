@@ -5,10 +5,9 @@ Contains pre-loaded prompts and outputs for each framework.
 
 from constants import Framework
 
-# Sample tasks for each framework
+# Base tasks for each framework - single source of truth
 SAMPLE_TASKS = {
-    Framework.CHAIN_OF_THOUGHT:
-"""Our department has been tasked with reducing operational costs by 15% over the next quarter. We currently spend $200,000 quarterly on the following items: 
+    Framework.CHAIN_OF_THOUGHT: """Our department has been tasked with reducing operational costs by 15% over the next quarter. We currently spend $200,000 quarterly on the following items: 
 
  - software licenses ($80,000)
  - office supplies ($30,000) 
@@ -16,7 +15,7 @@ SAMPLE_TASKS = {
  - external contractors ($40,000)
 
 Where should we focus on our cost-cutting efforts?""",
-
+    
     Framework.TREE_OF_THOUGHT: "Our team missed the last two sprint deadlines. The product manager says we're overcommitting, the developers say requirements keep changing, and QA says they don't have enough time for testing. As the team lead, how do you address this?",
     
     Framework.SELF_CONSISTENCY: "A colleague emails you on Friday at 4:30 PM with an 'urgent' request to review a 40-page document before Monday's 9 AM executive meeting. You have dinner plans at 6 PM and a packed weekend. You don't report to this colleague, but they're influential in the company. How do you respond?",
@@ -26,17 +25,15 @@ Where should we focus on our cost-cutting efforts?""",
     Framework.REFLECTION_REVISION: "Write a performance review self-assessment highlighting your accomplishments this quarter."
 }
 
-# Framework-enhanced prompts that were actually used to generate the sample outputs
-FRAMEWORK_PROMPTS = {
-    Framework.CHAIN_OF_THOUGHT:
-"""Our department has been tasked with reducing operational costs by 15% over the next quarter. We currently spend $200,000 quarterly on the following items: 
-
- - software licenses ($80,000)
- - office supplies ($30,000) 
- - travel ($50,000) 
- - external contractors ($40,000)
-
-Where should we focus on our cost-cutting efforts?
+# Build framework prompts from base tasks using the same templates as app.py
+# This ensures consistency and eliminates duplication
+def _build_framework_prompts():
+    """Build framework prompts from base tasks to avoid duplication."""
+    prompts = {}
+    
+    # Chain of Thought
+    task = SAMPLE_TASKS[Framework.CHAIN_OF_THOUGHT]
+    prompts[Framework.CHAIN_OF_THOUGHT] = f"""{task}
 
 Let's approach this step-by-step:
 
@@ -46,10 +43,11 @@ Let's approach this step-by-step:
 4. Consider relationships and dependencies
 5. Synthesize findings into a coherent solution
 
-Provide your reasoning for each step.""",
-
-    Framework.TREE_OF_THOUGHT:
-"""Our team missed the last two sprint deadlines. The product manager says we're overcommitting, the developers say requirements keep changing, and QA says they don't have enough time for testing. As the team lead, how do you address this?
+Provide your reasoning for each step."""
+    
+    # Tree of Thought
+    task = SAMPLE_TASKS[Framework.TREE_OF_THOUGHT]
+    prompts[Framework.TREE_OF_THOUGHT] = f"""{task}
 
 Let's explore multiple approaches to this problem:
 
@@ -73,15 +71,17 @@ Now, evaluate each branch:
 - Why is this branch preferable?
 - What is your final recommended approach?
 
-Provide your complete reasoning and final answer.""",
+Provide your complete reasoning and final answer."""
+    
+    # Self-Consistency
+    task = SAMPLE_TASKS[Framework.SELF_CONSISTENCY]
+    prompts[Framework.SELF_CONSISTENCY] = f"""{task}
 
-    Framework.SELF_CONSISTENCY:
-"""A colleague emails you on Friday at 4:30 PM with an 'urgent' request to review a 40-page document before Monday's 9 AM executive meeting. You have dinner plans at 6 PM and a packed weekend. You don't report to this colleague, but they're influential in the company. How do you respond?
-
-Please provide your reasoning and answer to this problem. Think through it carefully and explain your thought process.""",
-
-    Framework.FEW_SHOT:
-"""Here are some examples of how to approach similar problems:
+Please provide your reasoning and answer to this problem. Think through it carefully and explain your thought process."""
+    
+    # Few-Shot
+    task = SAMPLE_TASKS[Framework.FEW_SHOT]
+    prompts[Framework.FEW_SHOT] = f"""Here are some examples of how to approach similar problems:
 
 Example 1:
 Task: Calculate the total cost if I buy 3 apples at $2 each and 2 oranges at $3 each.
@@ -101,13 +101,14 @@ Answer: The average speed is 60 mph.
 
 Now, solve this problem using the same step-by-step approach:
 
-Task: Write a summary of the Q3 budget review meeting for distribution to stakeholders who couldn't attend.
+Task: {task}
 
-Solution:""",
-
-    Framework.REFLECTION_REVISION:
-"""Step 1 - Initial Answer Prompt:
-Write a performance review self-assessment highlighting your accomplishments this quarter.
+Solution:"""
+    
+    # Reflection & Revision
+    task = SAMPLE_TASKS[Framework.REFLECTION_REVISION]
+    prompts[Framework.REFLECTION_REVISION] = f"""Step 1 - Initial Answer Prompt:
+{task}
 
 Please provide your answer to this problem.
 
@@ -116,7 +117,11 @@ Step 2 - Critique Prompt:
 
 Step 3 - Revision Prompt:
 (Based on critique, provide improved answer)"""
-}
+    
+    return prompts
+
+# Framework-enhanced prompts built from base tasks
+FRAMEWORK_PROMPTS = _build_framework_prompts()
 
 # Ad-hoc outputs for each framework
 ADHOC_OUTPUTS = {
