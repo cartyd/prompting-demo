@@ -323,10 +323,10 @@ def render_offline_mode(framework: str):
         
         with col1:
             st.markdown("### 💬 Basic Output")
-            st.info(get_adhoc_output(framework))
+            st.markdown(get_adhoc_output(framework))
         with col2:
             st.markdown(f"### ✨ {framework} Output")
-            st.success(get_framework_output(framework))
+            st.markdown(get_framework_output(framework))
             
             # Intermediate data if applicable
             intermediate = get_intermediate_data(framework)
@@ -399,10 +399,10 @@ def render_online_mode(framework: str, model: str, temperature: float):
             
             with col1:
                 st.markdown("### 💬 Basic Output")
-                st.info(adhoc_output)
+                st.markdown(adhoc_output)
             with col2:
                 st.markdown(f"### ✨ {framework} Output")
-                st.success(framework_output)
+                st.markdown(framework_output)
                 render_intermediate_data(intermediate, framework)
         except ValueError as e:
             st.error(f"Validation error: {str(e)}")
