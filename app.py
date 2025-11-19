@@ -242,111 +242,86 @@ Critique of the initial answer:
 Based on this critique, provide an improved, revised answer that addresses the identified weaknesses and incorporates the suggested improvements."""
 
 
-class SampleDataAccessor:
-    """Data access layer for sample data to decouple from direct dictionary access."""
+# Simple functions to access sample data - no class needed
+
+def get_sample_task(framework: str) -> str:
+    """Get sample task for a framework.
     
-    def __init__(self, data_module=None):
-        """Initialize with sample data module.
+    Args:
+        framework: Framework name
         
-        Args:
-            data_module: Module containing sample data (defaults to sample_data)
-        """
-        self.data = data_module or sample_data
-    
-    def get_sample_task(self, framework: str) -> str:
-        """Get sample task for a framework.
+    Returns:
+        Sample task string
         
-        Args:
-            framework: Framework name
-            
-        Returns:
-            Sample task string
-            
-        Raises:
-            ValueError: If framework not found
-        """
-        if framework not in self.data.SAMPLE_TASKS:
-            raise ValueError(f"No sample task found for framework: {framework}")
-        return self.data.SAMPLE_TASKS[framework]
-    
-    def get_adhoc_output(self, framework: str) -> str:
-        """Get adhoc output for a framework.
-        
-        Args:
-            framework: Framework name
-            
-        Returns:
-            Adhoc output string
-            
-        Raises:
-            ValueError: If framework not found
-        """
-        if framework not in self.data.ADHOC_OUTPUTS:
-            raise ValueError(f"No adhoc output found for framework: {framework}")
-        return self.data.ADHOC_OUTPUTS[framework]
-    
-    def get_framework_output(self, framework: str) -> str:
-        """Get framework output for a framework.
-        
-        Args:
-            framework: Framework name
-            
-        Returns:
-            Framework output string
-            
-        Raises:
-            ValueError: If framework not found
-        """
-        if framework not in self.data.FRAMEWORK_OUTPUTS:
-            raise ValueError(f"No framework output found for framework: {framework}")
-        return self.data.FRAMEWORK_OUTPUTS[framework]
-    
-    def get_intermediate_data(self, framework: str) -> Optional[Dict[str, Any]]:
-        """Get intermediate data for a framework if it exists.
-        
-        Args:
-            framework: Framework name
-            
-        Returns:
-            Intermediate data dict or None if not available
-        """
-        return self.data.INTERMEDIATE_DATA.get(framework)
-    
-    def get_framework_prompt(self, framework: str) -> str:
-        """Get the framework-enhanced prompt for a framework.
-        
-        Args:
-            framework: Framework name
-            
-        Returns:
-            Framework prompt string
-            
-        Raises:
-            ValueError: If framework not found
-        """
-        if framework not in self.data.FRAMEWORK_PROMPTS:
-            raise ValueError(f"No framework prompt found for framework: {framework}")
-        return self.data.FRAMEWORK_PROMPTS[framework]
-    
-    def has_framework(self, framework: str) -> bool:
-        """Check if framework exists in sample data.
-        
-        Args:
-            framework: Framework name
-            
-        Returns:
-            True if framework has sample data
-        """
-        return framework in self.data.SAMPLE_TASKS
+    Raises:
+        ValueError: If framework not found
+    """
+    if framework not in sample_data.SAMPLE_TASKS:
+        raise ValueError(f"No sample task found for framework: {framework}")
+    return sample_data.SAMPLE_TASKS[framework]
 
 
-# Global instance of data accessor
-_sample_data_accessor = SampleDataAccessor()
+def get_adhoc_output(framework: str) -> str:
+    """Get adhoc output for a framework.
+    
+    Args:
+        framework: Framework name
+        
+    Returns:
+        Adhoc output string
+        
+    Raises:
+        ValueError: If framework not found
+    """
+    if framework not in sample_data.ADHOC_OUTPUTS:
+        raise ValueError(f"No adhoc output found for framework: {framework}")
+    return sample_data.ADHOC_OUTPUTS[framework]
 
 
-def get_sample_data() -> SampleDataAccessor:
-    """Get the sample data accessor instance."""
-    return _sample_data_accessor
+def get_framework_output(framework: str) -> str:
+    """Get framework output for a framework.
+    
+    Args:
+        framework: Framework name
+        
+    Returns:
+        Framework output string
+        
+    Raises:
+        ValueError: If framework not found
+    """
+    if framework not in sample_data.FRAMEWORK_OUTPUTS:
+        raise ValueError(f"No framework output found for framework: {framework}")
+    return sample_data.FRAMEWORK_OUTPUTS[framework]
+
+
+def get_intermediate_data(framework: str) -> Optional[Dict[str, Any]]:
+    """Get intermediate data for a framework if it exists.
+    
+    Args:
+        framework: Framework name
+        
+    Returns:
+        Intermediate data dict or None if not available
+    """
+    return sample_data.INTERMEDIATE_DATA.get(framework)
+
+
+def get_framework_prompt(framework: str) -> str:
+    """Get the framework-enhanced prompt for a framework.
+    
+    Args:
+        framework: Framework name
+        
+    Returns:
+        Framework prompt string
+        
+    Raises:
+        ValueError: If framework not found
+    """
+    if framework not in sample_data.FRAMEWORK_PROMPTS:
+        raise ValueError(f"No framework prompt found for framework: {framework}")
+    return sample_data.FRAMEWORK_PROMPTS[framework]
 
 
 def setup_page_config():
@@ -464,8 +439,7 @@ def render_sidebar(framework: str) -> tuple:
         load_sample_button = st.sidebar.button("📋 Load Sample Prompt", use_container_width=True)
         if load_sample_button:
             try:
-                data_accessor = get_sample_data()
-                sample_task = data_accessor.get_sample_task(framework)
+                sample_task = get_sample_task(framework)
                 st.session_state.adhoc_prompt_input = sample_task
                 st.session_state.framework_prompt_input = build_framework_prompt(framework, sample_task)
             except ValueError as e:
@@ -507,12 +481,10 @@ def render_intermediate_data(intermediate: Dict[str, Any], framework: str):
 def render_offline_mode(framework: str):
     """Render offline mode with pre-loaded sample data."""
     try:
-        data_accessor = get_sample_data()
-        
-        # Get sample data through accessor
-        task = data_accessor.get_sample_task(framework)
+        # Get sample data
+        task = get_sample_task(framework)
         adhoc_prompt = task
-        framework_prompt = data_accessor.get_framework_prompt(framework)
+        framework_prompt = get_framework_prompt(framework)
         
         # Display prompts
         st.markdown("---")
@@ -533,13 +505,13 @@ def render_offline_mode(framework: str):
         
         with col1:
             st.markdown("### 💬 Basic Output")
-            st.info(data_accessor.get_adhoc_output(framework))
+            st.info(get_adhoc_output(framework))
         with col2:
             st.markdown(f"### ✨ {framework} Output")
-            st.success(data_accessor.get_framework_output(framework))
+            st.success(get_framework_output(framework))
             
             # Intermediate data if applicable
-            intermediate = data_accessor.get_intermediate_data(framework)
+            intermediate = get_intermediate_data(framework)
             render_intermediate_data(intermediate, framework)
     except ValueError as e:
         st.error(f"Error loading sample data: {str(e)}")
