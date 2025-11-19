@@ -16,7 +16,16 @@ import os
 from dotenv import load_dotenv
 import sample_data
 import streamlit.components.v1 as components
-from constants import Framework, TEXTAREA_RESIZE_INTERVAL_MS, AVAILABLE_MODELS
+from constants import (
+    FRAMEWORK_CHAIN_OF_THOUGHT,
+    FRAMEWORK_TREE_OF_THOUGHT,
+    FRAMEWORK_SELF_CONSISTENCY,
+    FRAMEWORK_FEW_SHOT,
+    FRAMEWORK_REFLECTION_REVISION,
+    ALL_FRAMEWORKS,
+    TEXTAREA_RESIZE_INTERVAL_MS,
+    AVAILABLE_MODELS
+)
 import prompt_templates as templates
 
 # Load environment variables from .env file
@@ -389,12 +398,12 @@ def render_intermediate_data(intermediate: Dict[str, Any], framework: str):
         return
     
     st.markdown("### 🔍 Intermediate Reasoning")
-    if framework == Framework.SELF_CONSISTENCY:
+    if framework == FRAMEWORK_SELF_CONSISTENCY:
         tabs = st.tabs([f"Sample {i+1}" for i in range(intermediate["num_samples"])])
         for i, tab in enumerate(tabs):
             with tab:
                 st.write(intermediate["samples"][i])
-    elif framework == Framework.REFLECTION_REVISION:
+    elif framework == FRAMEWORK_REFLECTION_REVISION:
         tab1, tab2, tab3 = st.tabs(["Initial Answer", "Critique", "Final Answer"])
         with tab1:
             st.write(intermediate["initial_answer"])
@@ -540,7 +549,7 @@ def main():
     
     framework = st.sidebar.selectbox(
         "Framework",
-        Framework.all()
+        ALL_FRAMEWORKS
     )
     
     # Detect framework change in online mode
@@ -578,15 +587,15 @@ def build_framework_prompt(framework: str, task: str) -> str:
     if not task or not task.strip():
         raise ValueError("Task cannot be empty")
     
-    if framework == Framework.CHAIN_OF_THOUGHT:
+    if framework == FRAMEWORK_CHAIN_OF_THOUGHT:
         return build_chain_of_thought_prompt(task)
-    elif framework == Framework.TREE_OF_THOUGHT:
+    elif framework == FRAMEWORK_TREE_OF_THOUGHT:
         return build_tree_of_thought_prompt(task)
-    elif framework == Framework.SELF_CONSISTENCY:
+    elif framework == FRAMEWORK_SELF_CONSISTENCY:
         return build_self_consistency_prompt(task)
-    elif framework == Framework.FEW_SHOT:
+    elif framework == FRAMEWORK_FEW_SHOT:
         return build_few_shot_prompt(task)
-    elif framework == Framework.REFLECTION_REVISION:
+    elif framework == FRAMEWORK_REFLECTION_REVISION:
         initial = build_reflection_revision_prompt_initial(task)
         critique = "(After receiving initial answer, critique it for weaknesses)"
         revision = "(Based on critique, provide improved answer)"

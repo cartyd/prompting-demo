@@ -6,24 +6,21 @@ circular dependencies.
 """
 
 
-class Framework:
-    """Framework name constants to avoid magic strings."""
-    CHAIN_OF_THOUGHT = "Chain of Thought"
-    TREE_OF_THOUGHT = "Tree of Thought"
-    SELF_CONSISTENCY = "Self-Consistency"
-    FEW_SHOT = "Few-Shot"
-    REFLECTION_REVISION = "Reflection & Revision"
-    
-    @classmethod
-    def all(cls) -> list:
-        """Return all framework names as a list."""
-        return [
-            cls.CHAIN_OF_THOUGHT,
-            cls.TREE_OF_THOUGHT,
-            cls.SELF_CONSISTENCY,
-            cls.FEW_SHOT,
-            cls.REFLECTION_REVISION
-        ]
+# Framework name constants to avoid magic strings
+FRAMEWORK_CHAIN_OF_THOUGHT = "Chain of Thought"
+FRAMEWORK_TREE_OF_THOUGHT = "Tree of Thought"
+FRAMEWORK_SELF_CONSISTENCY = "Self-Consistency"
+FRAMEWORK_FEW_SHOT = "Few-Shot"
+FRAMEWORK_REFLECTION_REVISION = "Reflection & Revision"
+
+# All available frameworks in order
+ALL_FRAMEWORKS = [
+    FRAMEWORK_CHAIN_OF_THOUGHT,
+    FRAMEWORK_TREE_OF_THOUGHT,
+    FRAMEWORK_SELF_CONSISTENCY,
+    FRAMEWORK_FEW_SHOT,
+    FRAMEWORK_REFLECTION_REVISION
+]
 
 
 # Available OpenAI models for selection in online mode

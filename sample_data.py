@@ -3,12 +3,17 @@ Sample data for offline demonstration mode.
 Contains pre-loaded prompts and outputs for each framework.
 """
 
-from constants import Framework
+from constants import (
+    FRAMEWORK_CHAIN_OF_THOUGHT,
+    FRAMEWORK_TREE_OF_THOUGHT,
+    FRAMEWORK_SELF_CONSISTENCY,
+    FRAMEWORK_FEW_SHOT,
+    FRAMEWORK_REFLECTION_REVISION
+)
 import prompt_templates as templates
-
 # Base tasks for each framework - single source of truth
 SAMPLE_TASKS = {
-    Framework.CHAIN_OF_THOUGHT: """Our department has been tasked with reducing operational costs by 15% over the next quarter. We currently spend $200,000 quarterly on the following items: 
+    FRAMEWORK_CHAIN_OF_THOUGHT: """Our department has been tasked with reducing operational costs by 15% over the next quarter. We currently spend $200,000 quarterly on the following items:
 
  - software licenses ($80,000)
  - office supplies ($30,000) 
@@ -16,14 +21,14 @@ SAMPLE_TASKS = {
  - external contractors ($40,000)
 
 Where should we focus on our cost-cutting efforts?""",
+
+    FRAMEWORK_TREE_OF_THOUGHT: "Our team missed the last two sprint deadlines. The product manager says we're overcommitting, the developers say requirements keep changing, and QA says they don't have enough time for testing. As the team lead, how do you address this?",
     
-    Framework.TREE_OF_THOUGHT: "Our team missed the last two sprint deadlines. The product manager says we're overcommitting, the developers say requirements keep changing, and QA says they don't have enough time for testing. As the team lead, how do you address this?",
+    FRAMEWORK_SELF_CONSISTENCY: "A colleague emails you on Friday at 4:30 PM with an 'urgent' request to review a 40-page document before Monday's 9 AM executive meeting. You have dinner plans at 6 PM and a packed weekend. You don't report to this colleague, but they're influential in the company. How do you respond?",
     
-    Framework.SELF_CONSISTENCY: "A colleague emails you on Friday at 4:30 PM with an 'urgent' request to review a 40-page document before Monday's 9 AM executive meeting. You have dinner plans at 6 PM and a packed weekend. You don't report to this colleague, but they're influential in the company. How do you respond?",
+    FRAMEWORK_FEW_SHOT: "Write a summary of the Q3 budget review meeting for distribution to stakeholders who couldn't attend.",
     
-    Framework.FEW_SHOT: "Write a summary of the Q3 budget review meeting for distribution to stakeholders who couldn't attend.",
-    
-    Framework.REFLECTION_REVISION: "Write a performance review self-assessment highlighting your accomplishments this quarter."
+    FRAMEWORK_REFLECTION_REVISION: "Write a performance review self-assessment highlighting your accomplishments this quarter."
 }
 
 # Build framework prompts from base tasks using the same templates
@@ -33,24 +38,24 @@ def _build_framework_prompts():
     prompts = {}
     
     # Chain of Thought
-    task = SAMPLE_TASKS[Framework.CHAIN_OF_THOUGHT]
-    prompts[Framework.CHAIN_OF_THOUGHT] = f"{task}{templates.CHAIN_OF_THOUGHT_INSTRUCTIONS}"
+    task = SAMPLE_TASKS[FRAMEWORK_CHAIN_OF_THOUGHT]
+    prompts[FRAMEWORK_CHAIN_OF_THOUGHT] = f"{task}{templates.CHAIN_OF_THOUGHT_INSTRUCTIONS}"
     
     # Tree of Thought
-    task = SAMPLE_TASKS[Framework.TREE_OF_THOUGHT]
-    prompts[Framework.TREE_OF_THOUGHT] = f"{task}{templates.TREE_OF_THOUGHT_INSTRUCTIONS}"
+    task = SAMPLE_TASKS[FRAMEWORK_TREE_OF_THOUGHT]
+    prompts[FRAMEWORK_TREE_OF_THOUGHT] = f"{task}{templates.TREE_OF_THOUGHT_INSTRUCTIONS}"
     
     # Self-Consistency
-    task = SAMPLE_TASKS[Framework.SELF_CONSISTENCY]
-    prompts[Framework.SELF_CONSISTENCY] = f"{task}{templates.SELF_CONSISTENCY_INSTRUCTIONS}"
+    task = SAMPLE_TASKS[FRAMEWORK_SELF_CONSISTENCY]
+    prompts[FRAMEWORK_SELF_CONSISTENCY] = f"{task}{templates.SELF_CONSISTENCY_INSTRUCTIONS}"
     
     # Few-Shot
-    task = SAMPLE_TASKS[Framework.FEW_SHOT]
-    prompts[Framework.FEW_SHOT] = templates.FEW_SHOT_EXAMPLES.format(task=task)
+    task = SAMPLE_TASKS[FRAMEWORK_FEW_SHOT]
+    prompts[FRAMEWORK_FEW_SHOT] = templates.FEW_SHOT_EXAMPLES.format(task=task)
     
     # Reflection & Revision
-    task = SAMPLE_TASKS[Framework.REFLECTION_REVISION]
-    prompts[Framework.REFLECTION_REVISION] = f"""Step 1 - Initial Answer Prompt:
+    task = SAMPLE_TASKS[FRAMEWORK_REFLECTION_REVISION]
+    prompts[FRAMEWORK_REFLECTION_REVISION] = f"""Step 1 - Initial Answer Prompt:
 {task}{templates.REFLECTION_REVISION_INITIAL}
 
 Step 2 - Critique Prompt:
@@ -66,7 +71,7 @@ FRAMEWORK_PROMPTS = _build_framework_prompts()
 
 # Ad-hoc outputs for each framework
 ADHOC_OUTPUTS = {
-    Framework.CHAIN_OF_THOUGHT:
+    FRAMEWORK_CHAIN_OF_THOUGHT:
 """You need to cut 15% of $200,000 = $30,000 in the next quarter. The biggest and most flexible buckets are the best focus areas:
 
 -  **Software licenses ($80,000):** Aim for ~$10-12K in savings by removing unused licenses, renegotiating contracts, or consolidating tools.
@@ -78,11 +83,11 @@ ADHOC_OUTPUTS = {
 -  **Office supplies ($30,000):** Possible but limited savings ($2--3K).
   
 **Overall:** Focus on software, travel, and contractors; use supplies as a minor top-up to reach $30K.""",
-    Framework.TREE_OF_THOUGHT: "Have a team meeting to discuss the issues. Ask everyone to be more realistic about estimates and lock down requirements earlier. Make sure QA is involved from the start.",
+    FRAMEWORK_TREE_OF_THOUGHT: "Have a team meeting to discuss the issues. Ask everyone to be more realistic about estimates and lock down requirements earlier. Make sure QA is involved from the start.",
     
-    Framework.SELF_CONSISTENCY: "Tell them you have weekend plans but will try to review it Sunday evening. Ask them to highlight the most critical sections.",
+    FRAMEWORK_SELF_CONSISTENCY: "Tell them you have weekend plans but will try to review it Sunday evening. Ask them to highlight the most critical sections.",
     
-    Framework.FEW_SHOT: """Q3 Budget Review Meeting Summary
+    FRAMEWORK_FEW_SHOT: """Q3 Budget Review Meeting Summary
 
 The meeting covered our Q3 budget performance. We discussed where we overspent and where we saved money. Action items were assigned to various team leads. Overall, we're on track for the year.
 
@@ -91,7 +96,7 @@ Key points:
 - Cost-saving measures identified
 - Q4 planning discussed""",
     
-    Framework.REFLECTION_REVISION: """This quarter I worked on several important projects and met my goals. I collaborated well with my team and delivered quality work on time. I'm proud of what I accomplished and look forward to taking on more responsibility.
+    FRAMEWORK_REFLECTION_REVISION: """This quarter I worked on several important projects and met my goals. I collaborated well with my team and delivered quality work on time. I'm proud of what I accomplished and look forward to taking on more responsibility.
 
 Key achievements:
 - Completed all assigned projects
@@ -101,7 +106,7 @@ Key achievements:
 
 # Framework outputs for each framework
 FRAMEWORK_OUTPUTS = {
-    Framework.CHAIN_OF_THOUGHT: """#### **1. Summary of Required Savings**
+    FRAMEWORK_CHAIN_OF_THOUGHT: """#### **1. Summary of Required Savings**
 
 - Current quarterly spend: **$200,000**
 - Required reduction (15%): **$30,000**
@@ -189,7 +194,7 @@ a. _Office Supplies: (1-3K)_
 
 You can most effectively reach the $30K savings target by focusing on software, travel, and contractor costs. These categories are both large and flexible enough to support meaningful reductions without impairing operations. Office supplies serve as a small "top-up" if needed.""",
     
-    Framework.TREE_OF_THOUGHT: """Let me explore multiple approaches to this problem:
+    FRAMEWORK_TREE_OF_THOUGHT: """Let me explore multiple approaches to this problem:
 
 **Branch 1: Process-Focused Approach**
 - Root cause: Lack of clear process and planning
@@ -239,7 +244,7 @@ Which branch provides the most robust solution?
 
 This approach acknowledges the capacity issue while improving process and communication.""",
     
-    Framework.SELF_CONSISTENCY: """All three samples share common elements: setting boundaries, offering alternatives, and seeking clarity. The optimal response combines these:
+    FRAMEWORK_SELF_CONSISTENCY: """All three samples share common elements: setting boundaries, offering alternatives, and seeking clarity. The optimal response combines these:
 
 'I appreciate you thinking of me for this review. I have personal commitments this weekend, but I want to help you prepare for Monday's meeting.
 
@@ -257,7 +262,7 @@ This response:
 - Puts the ball back in their court to assess true urgency
 - Preserves your weekend while showing willingness to help""",
     
-    Framework.FEW_SHOT: """Subject: [SUMMARY] Q3 Budget Review - Variance Analysis & Q4 Adjustments
+    FRAMEWORK_FEW_SHOT: """Subject: [SUMMARY] Q3 Budget Review - Variance Analysis & Q4 Adjustments
 
 Key Decisions:
 • Approved 12% budget increase for Sales ($45K) to support Q4 pipeline acceleration
@@ -285,7 +290,7 @@ Next Steps: Q4 budget adjustments finalized in next week's executive meeting
 
 Attachments: Q3_Variance_Report.xlsx, Q4_Budget_Scenarios.pdf""",
     
-    Framework.REFLECTION_REVISION: """Q3 Self-Assessment - Accomplishments
+    FRAMEWORK_REFLECTION_REVISION: """Q3 Self-Assessment - Accomplishments
 
 **1. Customer Portal Redesign - Drove Revenue Impact**
 
@@ -359,7 +364,7 @@ Given these results, I'm ready to take on increased scope. Specifically interest
 
 # Intermediate data for frameworks that need it
 INTERMEDIATE_DATA = {
-    Framework.SELF_CONSISTENCY: {
+    FRAMEWORK_SELF_CONSISTENCY: {
         "samples": [
             "I can do a high-level review of the executive summary and key recommendations Monday morning at 7 AM, which would give you feedback before the 9 AM meeting. For a thorough review of the full document, I'd need until Tuesday. Which would be more valuable?",
             "I have personal commitments this weekend. Can you help me understand what specifically needs review? If there are 3-4 critical sections, I can prioritize those for early Monday. Otherwise, I can provide comprehensive feedback by Tuesday afternoon.",
@@ -367,7 +372,7 @@ INTERMEDIATE_DATA = {
         ],
         "num_samples": 3
     },
-    Framework.REFLECTION_REVISION: {
+    FRAMEWORK_REFLECTION_REVISION: {
         "initial_answer": """Q3 Self-Assessment - Accomplishments
 
 This quarter I made significant contributions to our team's success:
@@ -402,6 +407,6 @@ Weaknesses:
 - Mentorship claim lacks details on outcomes
 - Process improvement mentioned but impact not quantified""",
         
-        "final_answer": FRAMEWORK_OUTPUTS[Framework.REFLECTION_REVISION]
+        "final_answer": FRAMEWORK_OUTPUTS[FRAMEWORK_REFLECTION_REVISION]
     }
 }
