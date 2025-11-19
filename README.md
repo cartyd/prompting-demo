@@ -19,12 +19,26 @@ An interactive Streamlit application that demonstrates and compares different AI
 - **Interactive Configuration:** Adjust model, temperature, and framework-specific parameters (online mode)
 - **Intermediate Reasoning:** View detailed reasoning steps for applicable frameworks
 
+## Quick Start
+
+To run the app immediately in **offline mode** (no API key needed):
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the app
+streamlit run app.py
+```
+
+The app will open at `http://localhost:8501` with pre-loaded examples.
+
 ## Setup
 
 ### Prerequisites
 
 - Python 3.8 or higher
-- OpenAI API key
+- OpenAI API key (only needed for online mode)
 
 ### Installation
 
