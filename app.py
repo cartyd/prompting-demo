@@ -178,14 +178,15 @@ def setup_page_config():
         font-family: monospace;
         padding: 1rem;
         border-radius: 0.5rem;
+        color: #000000;
     }
     .output-basic {
-        background-color: #d1ecf1;
-        border: 1px solid #bee5eb;
+        background-color: #f0f8ff;
+        border: 2px solid #4a90e2;
     }
     .output-framework {
-        background-color: #d4edda;
-        border: 1px solid #c3e6cb;
+        background-color: #f0fff4;
+        border: 2px solid #48bb78;
     }
     </style>
     """, unsafe_allow_html=True)
