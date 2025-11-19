@@ -55,8 +55,7 @@ ADHOC_OUTPUTS = {
     
     Framework.SELF_CONSISTENCY: "Tell them you have weekend plans but will try to review it Sunday evening. Ask them to highlight the most critical sections.",
     
-    Framework.FEW_SHOT:
-    "Few-Shot": """Q3 Budget Review Meeting Summary
+    Framework.FEW_SHOT: """Q3 Budget Review Meeting Summary
 
 The meeting covered our Q3 budget performance. We discussed where we overspent and where we saved money. Action items were assigned to various team leads. Overall, we're on track for the year.
 
@@ -75,7 +74,7 @@ Key achievements:
 
 # Framework outputs for each framework
 FRAMEWORK_OUTPUTS = {
-    Framework.CHAIN_OF_THOUGHT:
+    Framework.CHAIN_OF_THOUGHT: """#### **1. Summary of Required Savings**
 
 - Current quarterly spend: **$200,000**
 - Required reduction (15%): **$30,000**
