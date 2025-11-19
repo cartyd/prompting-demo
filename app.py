@@ -16,32 +16,10 @@ import os
 from dotenv import load_dotenv
 import sample_data
 import streamlit.components.v1 as components
+from constants import Framework, TEXTAREA_RESIZE_INTERVAL_MS
 
 # Load environment variables from .env file
 load_dotenv()
-
-# Constants
-TEXTAREA_RESIZE_INTERVAL_MS = 100  # Interval for checking textarea resize in milliseconds
-
-
-class Framework:
-    """Framework name constants to avoid magic strings."""
-    CHAIN_OF_THOUGHT = "Chain of Thought"
-    TREE_OF_THOUGHT = "Tree of Thought"
-    SELF_CONSISTENCY = "Self-Consistency"
-    FEW_SHOT = "Few-Shot"
-    REFLECTION_REVISION = "Reflection & Revision"
-    
-    @classmethod
-    def all(cls) -> list:
-        """Return all framework names as a list."""
-        return [
-            cls.CHAIN_OF_THOUGHT,
-            cls.TREE_OF_THOUGHT,
-            cls.SELF_CONSISTENCY,
-            cls.FEW_SHOT,
-            cls.REFLECTION_REVISION
-        ]
 
 
 # Initialize OpenAI client

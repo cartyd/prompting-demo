@@ -3,18 +3,7 @@ Sample data for offline demonstration mode.
 Contains pre-loaded prompts and outputs for each framework.
 """
 
-# Import Framework constants from app
-# Note: This creates a circular dependency but is acceptable for constants
-try:
-    from app import Framework
-except ImportError:
-    # Fallback if app module not available (for standalone testing)
-    class Framework:
-        CHAIN_OF_THOUGHT = "Chain of Thought"
-        TREE_OF_THOUGHT = "Tree of Thought"
-        SELF_CONSISTENCY = "Self-Consistency"
-        FEW_SHOT = "Few-Shot"
-        REFLECTION_REVISION = "Reflection & Revision"
+from constants import Framework
 
 # Sample tasks for each framework
 SAMPLE_TASKS = {
