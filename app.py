@@ -312,6 +312,22 @@ class SampleDataAccessor:
         """
         return self.data.INTERMEDIATE_DATA.get(framework)
     
+    def get_framework_prompt(self, framework: str) -> str:
+        """Get the framework-enhanced prompt for a framework.
+        
+        Args:
+            framework: Framework name
+            
+        Returns:
+            Framework prompt string
+            
+        Raises:
+            ValueError: If framework not found
+        """
+        if framework not in self.data.FRAMEWORK_PROMPTS:
+            raise ValueError(f"No framework prompt found for framework: {framework}")
+        return self.data.FRAMEWORK_PROMPTS[framework]
+    
     def has_framework(self, framework: str) -> bool:
         """Check if framework exists in sample data.
         
@@ -496,7 +512,7 @@ def render_offline_mode(framework: str):
         # Get sample data through accessor
         task = data_accessor.get_sample_task(framework)
         adhoc_prompt = task
-        framework_prompt = build_framework_prompt(framework, task)
+        framework_prompt = data_accessor.get_framework_prompt(framework)
         
         # Display prompts
         st.markdown("---")
