@@ -152,9 +152,20 @@ def get_framework_output(framework: str) -> str:
     return _get_sample_data(framework, sample_data.FRAMEWORK_OUTPUTS, "framework output")
 
 
-def get_framework_prompt(framework: str) -> str:
-    """Get the framework-enhanced prompt for a framework."""
-    return _get_sample_data(framework, sample_data.FRAMEWORK_PROMPTS, "framework prompt")
+def get_framework_prompt(framework: str, mode: str = 'online') -> str:
+    """Get the framework-enhanced prompt for a framework.
+    
+    Args:
+        framework: Framework name
+        mode: 'offline' for static prompts, 'online' for dynamic prompts
+        
+    Returns:
+        Framework-enhanced prompt
+    """
+    if mode == 'offline':
+        return _get_sample_data(framework, sample_data.OFFLINE_FRAMEWORK_PROMPTS, "offline framework prompt")
+    else:
+        return _get_sample_data(framework, sample_data.FRAMEWORK_PROMPTS, "framework prompt")
 
 
 def get_intermediate_data(framework: str) -> Optional[Dict[str, Any]]:
@@ -341,7 +352,7 @@ def render_offline_mode(framework: str):
         # Get sample data
         task = get_sample_task(framework)
         basic_prompt = task
-        framework_prompt = get_framework_prompt(framework)
+        framework_prompt = get_framework_prompt(framework, mode='offline')
         
         # Display prompts
         st.markdown("---")
