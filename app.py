@@ -30,6 +30,55 @@ import prompt_templates as templates
 import html
 
 
+# Default model selection
+DEFAULT_MODEL = "gpt-4o"
+
+# Custom CSS for UI styling
+CUSTOM_CSS = """
+<style>
+/* Double the font size for info and success boxes */
+.stAlert p, .stAlert div {
+    font-size: 2rem !important;
+    line-height: 1.6 !important;
+}
+/* Double the font size for code blocks (prompts) */
+.stCodeBlock code, .stCodeBlock pre {
+    font-size: 2rem !important;
+    line-height: 1.6 !important;
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+}
+/* Double the font size for text areas (online mode prompts) */
+.stTextArea textarea {
+    font-size: 2rem !important;
+    line-height: 1.6 !important;
+    resize: none !important;
+    overflow: hidden !important;
+    min-height: 100px !important;
+}
+/* Style for output containers */
+.output-container {
+    font-size: 2rem !important;
+    line-height: 1.6 !important;
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    font-family: monospace;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    color: #000000;
+}
+.output-basic {
+    background-color: #f0f8ff;
+    border: 2px solid #4a90e2;
+}
+.output-framework {
+    background-color: #f0fff4;
+    border: 2px solid #48bb78;
+}
+</style>
+"""
+
+
 def escape_for_display(text: str) -> str:
     """Escape text for safe HTML display, including $ character.
     
@@ -77,7 +126,8 @@ def call_llm(client: OpenAI, prompt: str, model: str, temperature: float = 0.7) 
         The LLM response text
         
     Raises:
-        ValueError: If prompt is empty or None
+        ValueError: If prompt is empty, None, or model is not specified
+        Exception: If OpenAI API call fails
     """
     # Input validation
     if not prompt or not prompt.strip():
@@ -86,34 +136,13 @@ def call_llm(client: OpenAI, prompt: str, model: str, temperature: float = 0.7) 
     if not model:
         raise ValueError("Model must be specified")
     
-    try:
-        response = client.chat.completions.create(
-            model=model,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=temperature
-        )
-        return response.choices[0].message.content
-    except Exception as e:
-        return f"Error calling LLM: {str(e)}"
+    response = client.chat.completions.create(
+        model=model,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=temperature
+    )
+    return response.choices[0].message.content
 
-
-
-
-# Framework prompt builders - mapping framework to template
-_FRAMEWORK_BUILDERS = {
-    FRAMEWORK_CHAIN_OF_THOUGHT: lambda task: f"{task}{templates.CHAIN_OF_THOUGHT_INSTRUCTIONS}",
-    FRAMEWORK_TREE_OF_THOUGHT: lambda task: f"{task}{templates.TREE_OF_THOUGHT_INSTRUCTIONS}",
-    FRAMEWORK_SELF_CONSISTENCY: lambda task: f"{task}{templates.SELF_CONSISTENCY_INSTRUCTIONS}",
-    FRAMEWORK_FEW_SHOT: lambda task: templates.FEW_SHOT_EXAMPLES.format(task=task),
-    FRAMEWORK_REFLECTION_REVISION: lambda task: f"""Step 1 - Initial Answer Prompt:
-{task}{templates.REFLECTION_REVISION_INITIAL}
-
-Step 2 - Critique Prompt:
-(After receiving initial answer, critique it for weaknesses)
-
-Step 3 - Revision Prompt:
-(Based on critique, provide improved answer)"""
-}
 
 
 # Generic sample data accessor
@@ -177,50 +206,8 @@ def setup_page_config():
     """Configure page settings and inject custom CSS/JavaScript."""
     st.set_page_config(page_title="AI Prompt Framework Demo", layout="wide")
     
-    # Custom CSS to double the font size for output text
-    st.markdown("""
-    <style>
-    /* Double the font size for info and success boxes */
-    .stAlert p, .stAlert div {
-        font-size: 2rem !important;
-        line-height: 1.6 !important;
-    }
-    /* Double the font size for code blocks (prompts) */
-    .stCodeBlock code, .stCodeBlock pre {
-        font-size: 2rem !important;
-        line-height: 1.6 !important;
-        white-space: pre-wrap !important;
-        word-wrap: break-word !important;
-    }
-    /* Double the font size for text areas (online mode prompts) */
-    .stTextArea textarea {
-        font-size: 2rem !important;
-        line-height: 1.6 !important;
-        resize: none !important;
-        overflow: hidden !important;
-        min-height: 100px !important;
-    }
-    /* Style for output containers */
-    .output-container {
-        font-size: 2rem !important;
-        line-height: 1.6 !important;
-        white-space: pre-wrap !important;
-        word-wrap: break-word !important;
-        font-family: monospace;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        color: #000000;
-    }
-    .output-basic {
-        background-color: #f0f8ff;
-        border: 2px solid #4a90e2;
-    }
-    .output-framework {
-        background-color: #f0fff4;
-        border: 2px solid #48bb78;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+    # Inject custom CSS
+    st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
     
     # JavaScript for auto-resizing text areas
     components.html(f"""
@@ -290,10 +277,16 @@ def render_sidebar(framework: str) -> tuple:
         st.sidebar.markdown("---")
         st.sidebar.subheader("Online Mode Settings")
         
+        # Find default model index, fallback to 0 if not found
+        try:
+            default_index = AVAILABLE_MODELS.index(DEFAULT_MODEL)
+        except ValueError:
+            default_index = 0
+        
         model = st.sidebar.selectbox(
             "Model",
             AVAILABLE_MODELS,
-            index=2
+            index=default_index
         )
         
         temperature = st.sidebar.slider(
@@ -309,9 +302,9 @@ def render_sidebar(framework: str) -> tuple:
             try:
                 sample_task = get_sample_task(framework)
                 st.session_state.basic_prompt_input = sample_task
-                st.session_state.framework_prompt_input = build_framework_prompt(framework, sample_task)
-            except ValueError as e:
-                st.error(str(e))
+                st.session_state.framework_prompt_input = get_framework_prompt(framework, mode='online')
+            except (ValueError, KeyError) as e:
+                st.error(f"Error loading sample: {str(e)}")
         
         clear_button = st.sidebar.button("🗑️ Clear All Text", use_container_width=True)
         if clear_button:
@@ -381,10 +374,12 @@ def render_offline_mode(framework: str):
             # Intermediate data if applicable
             intermediate = get_intermediate_data(framework)
             render_intermediate_data(intermediate, framework)
-    except ValueError as e:
+    except (ValueError, KeyError) as e:
         st.error(f"Error loading sample data: {str(e)}")
     except Exception as e:
         st.error(f"Unexpected error in offline mode: {str(e)}")
+        import traceback
+        st.error(f"Details: {traceback.format_exc()}")
 
 
 def render_online_mode(framework: str, model: str, temperature: float):
@@ -407,7 +402,12 @@ def render_online_mode(framework: str, model: str, temperature: float):
         st.markdown(f"### 🎯 {framework} Prompt")
         # Auto-generate framework prompt if framework prompt is empty
         if not st.session_state.framework_prompt_input and st.session_state.basic_prompt_input.strip():
-            st.session_state.framework_prompt_input = build_framework_prompt(framework, st.session_state.basic_prompt_input)
+            try:
+                # Use dynamic framework prompts from sample_data
+                st.session_state.framework_prompt_input = get_framework_prompt(framework, mode='online')
+            except (ValueError, KeyError):
+                # Fallback: just use the basic prompt
+                st.session_state.framework_prompt_input = st.session_state.basic_prompt_input
         
         st.session_state.framework_prompt_input = st.text_area(
             label=f"{framework} Prompt",
@@ -454,10 +454,12 @@ def render_online_mode(framework: str, model: str, temperature: float):
                 st.markdown(f"### ✨ {framework} Output")
                 st.markdown(f'<div class="output-container output-framework">{escape_for_display(framework_output)}</div>', unsafe_allow_html=True)
                 render_intermediate_data(intermediate, framework)
-        except ValueError as e:
+        except (ValueError, KeyError) as e:
             st.error(f"Validation error: {str(e)}")
         except Exception as e:
-            st.error(f"An unexpected error occurred: {str(e)}")
+            st.error(f"API error: {str(e)}")
+            import traceback
+            st.error(f"Details: {traceback.format_exc()}")
 
 
 def main():
@@ -502,31 +504,6 @@ def main():
         render_online_mode(framework, model, temperature)
 
 
-def build_framework_prompt(framework: str, task: str) -> str:
-    """Build the appropriate framework prompt based on the selected framework.
-    
-    Args:
-        framework: The framework name (use framework constants)
-        task: The user's task or problem statement
-        
-    Returns:
-        Enhanced prompt with framework-specific instructions
-        
-    Raises:
-        ValueError: If framework or task is empty/None
-    """
-    if not framework:
-        raise ValueError("Framework must be specified")
-    if not task or not task.strip():
-        raise ValueError("Task cannot be empty")
-    
-    # Use dictionary mapping instead of if/elif chain
-    builder = _FRAMEWORK_BUILDERS.get(framework)
-    if builder:
-        return builder(task)
-    
-    # Fallback to task if framework not recognized
-    return task
 
 
 if __name__ == "__main__":

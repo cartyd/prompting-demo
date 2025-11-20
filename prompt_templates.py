@@ -80,28 +80,3 @@ Solution:"""
 # Reflection & Revision template
 REFLECTION_REVISION_INITIAL = """
 Please provide your answer to this problem."""
-
-
-REFLECTION_REVISION_CRITIQUE = """Original task: {task}
-
-Here was my initial answer:
-{initial_answer}
-
-Now, critically analyze this answer:
-- What are the strengths of this answer?
-- What are the weaknesses or potential errors?
-- What might be missing or incomplete?
-- How could this answer be improved?
-
-Provide a detailed critique."""
-
-
-REFLECTION_REVISION_REVISION = """Original task: {task}
-
-Initial answer:
-{initial_answer}
-
-Critique of the initial answer:
-{critique}
-
-Based on this critique, provide an improved, revised answer that addresses the identified weaknesses and incorporates the suggested improvements."""

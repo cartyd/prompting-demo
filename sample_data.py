@@ -15,20 +15,45 @@ import prompt_templates as templates
 SAMPLE_TASKS = {
     FRAMEWORK_CHAIN_OF_THOUGHT: """Our department has been tasked with reducing operational costs by 15% over the next quarter. We currently spend $200,000 quarterly on the following items:
 
- - software licenses ($80,000)
- - office supplies ($30,000) 
- - travel ($50,000) 
- - external contractors ($40,000)
+- software licenses ($80,000)
+- office supplies ($30,000)
+- travel ($50,000)
+- external contractors ($40,000)
 
 Where should we focus on our cost-cutting efforts?""",
 
-    FRAMEWORK_TREE_OF_THOUGHT: "Our team missed the last two sprint deadlines. The product manager says we're overcommitting, the developers say requirements keep changing, and QA says they don't have enough time for testing. As the team lead, how do you address this?",
+    FRAMEWORK_TREE_OF_THOUGHT: """Improve the following monthly team performance report and make it more effective. Here is the report to improve:
+
+Team Performance Report -- January
+
+This month the team completed most of their tasks. We met for several meetings and discussed project issues. Some items were delayed, but we expect to finish them early next month. The team communicated well overall.
+
+Blockers include limited QA availability and some confusion about priorities.
+Next month we will try to finish the delayed tasks and stay on track.""",
     
-    FRAMEWORK_SELF_CONSISTENCY: "A colleague emails you on Friday at 4:30 PM with an 'urgent' request to review a 40-page document before Monday's 9 AM executive meeting. You have dinner plans at 6 PM and a packed weekend. You don't report to this colleague, but they're influential in the company. How do you respond?",
+    FRAMEWORK_SELF_CONSISTENCY: "Write an email summarizing key points from our website redesign project meeting.",
     
-    FRAMEWORK_FEW_SHOT: "Write a summary of the Q3 budget review meeting for distribution to stakeholders who couldn't attend.",
+    FRAMEWORK_FEW_SHOT: """Write a weekly project update for the Data Migration Project. The project information follows:
+
+# Basic Prompt
+
+Project: Data Migration Project
+
+Current Status: Slightly Behind
+
+This Week:
+
+Completed migration of 4 legacy tables (Customer, Orders, Payments, Inventory).
+Performed validation checks on 58% of migrated data.
+Next Week:
+
+Begin migrating Product and Pricing tables.
+Conduct full validation sweep on completed tables.
+Risks/Blockers:
+
+Unresolved indexing issue causing slow query performance in staging.""",
     
-    FRAMEWORK_REFLECTION_REVISION: "Write a performance review self-assessment highlighting your accomplishments this quarter."
+    FRAMEWORK_REFLECTION_REVISION: "Write an email to stakeholders explaining that the product launch date will be delayed by two weeks."
 }
 
 # Build framework prompts from base tasks using the same templates
@@ -72,91 +97,125 @@ FRAMEWORK_PROMPTS = _build_framework_prompts()
 # Static prompts for offline mode - frozen snapshot for demos
 # These are pre-built versions that won't change with template updates
 OFFLINE_FRAMEWORK_PROMPTS = {
-    FRAMEWORK_CHAIN_OF_THOUGHT: """Our department has been tasked with reducing operational costs by 15% over the next quarter. We currently spend $200,000 quarterly on the following items:
+    FRAMEWORK_CHAIN_OF_THOUGHT: """Analyze our department's cost structure and identify the most effective way to reduce costs by 15%. Provide your output using this structure:
 
- - software licenses ($80,000)
- - office supplies ($30,000) 
- - travel ($50,000) 
- - external contractors ($40,000)
+1. Summary of required savings
+2. Quantitative breakdown of each cost category
+3. High, medium, and low impact opportunities
+4. Ranked action plan with projected savings
+5. Risks, trade-offs, and mitigation strategies""",
 
-Where should we focus on our cost-cutting efforts?
-Let's approach this step-by-step:
+    FRAMEWORK_TREE_OF_THOUGHT: """Improve the following monthly team performance report using a Tree of Thought approach.
 
-1. First, identify the key components and requirements
-2. Break down the problem into manageable parts
-3. Analyze each part systematically
-4. Consider relationships and dependencies
-5. Synthesize findings into a coherent solution
+Break your reasoning into multiple branches that explore distinct improvement strategies, including:
+- Structure (how the report is organized)
+- Tone & clarity (how clearly and professionally it communicates)
+- Data emphasis (metrics, KPIs, and measurable results)
+- Actionability (SMART goals, owners, deadlines)
 
-Provide your reasoning for each step.""",
+For each branch, provide:
 
-    FRAMEWORK_TREE_OF_THOUGHT: """Our team missed the last two sprint deadlines. The product manager says we're overcommitting, the developers say requirements keep changing, and QA says they don't have enough time for testing. As the team lead, how do you address this?
-Let's explore multiple approaches to this problem:
+1. A clear explanation of the improvement approach
+2. Specific proposed changes
+3. A brief rewritten sample of the section if relevant
 
-Branch 1: Consider the most direct approach
-- What is the straightforward solution?
-- What are its advantages?
-- What are its limitations?
+After generating the branches, compare them, evaluate their strengths and weaknesses, and choose the best combined strategy.
 
-Branch 2: Consider an alternative creative approach
-- What's a different way to think about this?
-- What unique insights does this provide?
-- What trade-offs does this involve?
+Then produce a final, fully rewritten report that merges the strongest ideas from all branches. Here is the report to improve:
 
-Branch 3: Consider a hybrid or optimal approach
-- Can we combine the best of both previous approaches?
-- What would be the most comprehensive solution?
-- What makes this approach superior?
+Team Performance Report -- January
 
-Now, evaluate each branch:
-- Which branch provides the most robust solution?
-- Why is this branch preferable?
-- What is your final recommended approach?
+This month the team completed most of their tasks. We met for several meetings and discussed project issues. Some items were delayed, but we expect to finish them early next month. The team communicated well overall.
 
-Provide your complete reasoning and final answer.""",
+Blockers include limited QA availability and some confusion about priorities.
 
-    FRAMEWORK_SELF_CONSISTENCY: """A colleague emails you on Friday at 4:30 PM with an 'urgent' request to review a 40-page document before Monday's 9 AM executive meeting. You have dinner plans at 6 PM and a packed weekend. You don't report to this colleague, but they're influential in the company. How do you respond?
-Please provide your reasoning and answer to this problem. Think through it carefully and explain your thought process.""",
+Next month we will try to finish the delayed tasks and stay on track.""",
 
-    FRAMEWORK_FEW_SHOT: """Here are some examples of how to approach similar problems:
+    FRAMEWORK_SELF_CONSISTENCY: """You are an expert corporate communicator. Use the Self-Consistency Framework to generate the best possible result.
 
-Example 1:
-Task: Calculate the total cost if I buy 3 apples at $2 each and 2 oranges at $3 each.
-Solution: Let me break this down:
-- Apples: 3 × $2 = $6
-- Oranges: 2 × $3 = $6
-- Total: $6 + $6 = $12
-Answer: The total cost is $12.
+- Step 1 -- Produce three distinct candidate email drafts, each with different tones and structures.
 
-Example 2:
-Task: If a train travels 120 miles in 2 hours, what is its average speed?
-Solution: To find average speed, I need to divide distance by time:
-- Distance: 120 miles
-- Time: 2 hours
-- Speed = Distance ÷ Time = 120 ÷ 2 = 60 miles per hour
-Answer: The average speed is 60 mph.
+- Step 2 -- Compare the strengths and weaknesses of the candidates.
 
-Now, solve this problem using the same step-by-step approach:
+- Step 3 -- Synthesize a final email that combines the best elements of all candidates and is suitable for sending in a professional corporate setting.
 
-Task: Write a summary of the Q3 budget review meeting for distribution to stakeholders who couldn't attend.
+The meeting was about the website redesign project.
+Key points discussed:
+- Timeline concerns
+- Need for improved mobile responsiveness
+- Upcoming stakeholder review next Wednesday
+- Action items for Design, Engineering, and Marketing teams""",
 
-Solution:""",
+    FRAMEWORK_FEW_SHOT: """Create polished, executive-ready weekly project updates by following the structure and tone demonstrated in the examples below.
 
-    FRAMEWORK_REFLECTION_REVISION: """Step 1 - Initial Answer Prompt:
-Write a performance review self-assessment highlighting your accomplishments this quarter.
-Please provide your answer to this problem.
+📘 Example 1
+Project: Website Redesign
 
-Step 2 - Critique Prompt:
-(After receiving initial answer, critique it for weaknesses)
+Status: On Track
 
-Step 3 - Revision Prompt:
-(Based on critique, provide improved answer)"""
+This Week:
+
+Completed user testing sessions with 18 participants
+Finalized UI layouts for the checkout flow
+Next Week:
+
+Begin implementing updated components in the production environment.
+Risks / Blockers:
+
+Awaiting approval on two new design assets (ETA: Monday).
+📘 Example 2
+Project: CRM Optimization
+
+Status: Slightly Behind
+
+This Week:
+
+Integrated lead scoring model into CRM sandbox
+Tested 4 new automation rules with the sales team
+Next Week:
+
+Deploy final automation rules to production.
+Risks / Blockers:
+
+Dependency on IT for API rate limit increase.
+📝 Instructions for the Model
+Using the structure, level of detail, and tone demonstrated in the examples above, prepare a weekly update for the project described below.
+
+📂 Project Details
+
+Project: Data Migration Project
+
+Current Status: Slightly Behind
+
+This Week:
+
+Completed migration of 4 legacy tables (Customer, Orders, Payments, Inventory).
+Performed validation checks on 58% of migrated data.
+Next Week:
+
+Begin migrating Product and Pricing tables.
+Conduct full validation sweep on completed tables.
+Risks / Blockers:
+
+Unresolved indexing issue causing slow query performance in staging.""",
+
+    FRAMEWORK_REFLECTION_REVISION: """Draft an email to project stakeholders explaining that the product launch date will be delayed by two weeks.
+
+Reflect on your draft and identify:
+
+1. Missing context stakeholders would need
+2. Tone improvements for professionalism and reassurance
+3. Any unclear or vague language
+4. Opportunities to offer next steps or mitigations
+
+Revise the email accordingly. Provide the final improved version after reflection."""
 }
 
 # Ad-hoc outputs for each framework
 BASIC_OUTPUTS = {
     FRAMEWORK_CHAIN_OF_THOUGHT:
-"""You need to cut 15% of $200,000 = $30,000 in the next quarter. The biggest and most flexible buckets are the best focus areas:
+"""
+You need to cut 15% of $200,000 = $30,000 in the next quarter. The biggest and most flexible buckets are the best focus areas:
 
 -  **Software licenses ($80,000):** Aim for ~$10-12K in savings by removing unused licenses, renegotiating contracts, or consolidating tools.
 
@@ -167,73 +226,88 @@ BASIC_OUTPUTS = {
 -  **Office supplies ($30,000):** Possible but limited savings ($2--3K).
   
 **Overall:** Focus on software, travel, and contractors; use supplies as a minor top-up to reach $30K.""",
-    FRAMEWORK_TREE_OF_THOUGHT: "Have a team meeting to discuss the issues. Ask everyone to be more realistic about estimates and lock down requirements earlier. Make sure QA is involved from the start.",
-    
-    FRAMEWORK_SELF_CONSISTENCY: "Tell them you have weekend plans but will try to review it Sunday evening. Ask them to highlight the most critical sections.",
-    
-    FRAMEWORK_FEW_SHOT: """Q3 Budget Review Meeting Summary
+    FRAMEWORK_TREE_OF_THOUGHT: """Revised Monthly Team Performance Report -- January
 
-The meeting covered our Q3 budget performance. We discussed where we overspent and where we saved money. Action items were assigned to various team leads. Overall, we're on track for the year.
+The team performed well overall this month and completed most assigned tasks. We held regular meetings to review progress and address project issues. A few tasks were delayed, but we expect to complete them early next month. Team communication remained strong throughout the period.
 
-Key points:
-- Some departments over budget
-- Cost-saving measures identified
-- Q4 planning discussed""",
+Blockers:
+- Limited QA availability
+- Occasional uncertainty around task priorities
+
+Next Steps:
+We plan to complete the delayed tasks next month and maintain better alignment to avoid similar delays.
+
+Characteristics:
+- Cleaner writing
+- Slightly improved structure
+- No deep restructuring, no metrics, no strategic thinking""",
     
-    FRAMEWORK_REFLECTION_REVISION: """This quarter I worked on several important projects and met my goals. I collaborated well with my team and delivered quality work on time. I'm proud of what I accomplished and look forward to taking on more responsibility.
+    FRAMEWORK_SELF_CONSISTENCY: """Subject: Website Redesign Meeting Summary
 
-Key achievements:
-- Completed all assigned projects
-- Helped team members when needed
-- Maintained good communication"""
+Hi team,
+
+Here's a quick summary of our meeting today about the website redesign project. We talked about the project timeline and some concerns that were raised. We also mentioned that the mobile responsiveness needs improvement. There will be a stakeholder review next Wednesday. Design, Engineering, and Marketing teams each have action items to prepare for that review.
+
+Let me know if I missed anything.
+
+Thanks!""",
+    
+    FRAMEWORK_FEW_SHOT: """The Data Migration Project made some progress this week. We completed a number of migration tasks and continued working through validation. Next week we will keep moving forward with additional table migrations and review work. There are still some issues that we're monitoring, including performance challenges, but we expect to continue making progress.""",
+    
+    FRAMEWORK_REFLECTION_REVISION: """Subject: Update on Product Launch Timeline
+
+Hi everyone,
+
+I wanted to let you know that the product launch will be delayed by two weeks due to some unexpected issues. We are working on resolving them and will keep you updated.
+
+Thanks,
+
+[Your Name]"""
 }
 
 # Framework outputs for each framework
 FRAMEWORK_OUTPUTS = {
-    FRAMEWORK_CHAIN_OF_THOUGHT: """#### **1. Summary of Required Savings**
+    FRAMEWORK_CHAIN_OF_THOUGHT: """1. Summary of Required Savings
 
-- Current quarterly spend: **$200,000**
-- Required reduction (15%): **$30,000**
+- Current quarterly spend: $200,000
+- Required reduction (15%): $30,000
 
   
-#### **2. Quantitative Breakdown**
+2. Quantitative Breakdown
 
-|Category					|Current Spend	|% of Total	|Notes              															|
-|------------------------|-------------------|-------------|---------------------------------------------------------|			
-|Software Licenses.   | $80,000          	|40%           | Largest category; often overprovisioned  			|
-|Travel							| $50,000			|25%			|Discrentionary; can be replaced with virtrual alt.	|
-|Ext. Contractors		|$40,000				|20%			|Flexible; may contain non-critical tasks					|
-|Office Supplies			|$30,000				|15%			|Smaller savings potential	
-	
+- Software Licenses: $80,000 (40%) - Largest category; often overprovisioned
+- Travel: $50,000 (25%) - Discretionary; can be replaced with virtual alternatives
+- External Contractors: $40,000 (20%) - Flexible; may contain non-critical tasks
+- Office Supplies: $30,000 (15%) - Smaller savings potential
 
-#### **3. Impact Opportunities**
+3. Impact Opportunities
 
-**High Impact**
+High Impact
 
-a. _Software licenses (10-14K potential savings)_
+a. Software licenses (10-14K potential savings)
 
-	Audit unused or lightly used seats
-	Consolidate overlapping tools
-	Renegotiate contracts or shift to lower tiers
-	Consider replacing premium tools with lower-cost alternatives
+	- Audit unused or lightly used seats
+	- Consolidate overlapping tools
+	- Renegotiate contracts or shift to lower tiers
+	- Consider replacing premium tools with lower-cost alternatives
 
-b. _Travel (8-12K potential savings)_
+b. Travel (8-12K potential savings)
 
 	Restrict nonessential travel
 	Require virtual-first meeting policies
 	Implement stricter preapproval steps
 
-**Medium Impact**
+Medium Impact
 
-a. _External Contractors (6-10K potential savings)_
+a. External Contractors (6-10K potential savings)
 
 	Reduce hours or renegotiate scope
 	Bring lower-skill tasks in-house temporarily
 	Pause non-urgent projects until next quarter
 
-**Low Impact**
+Low Impact
 
-a. _Office Supplies: (1-3K)_
+a. Office Supplies: (1-3K)
 
 	Centralize purchasing to reduce redundant orders
 	Implement usage tracking or quarterly caps
@@ -241,21 +315,21 @@ a. _Office Supplies: (1-3K)_
 
   
 
-#### **4. Ranked Action Plan**
+4. Ranked Action Plan
 
-1.  **Software Optimization**  (target: $12K savings)
+1.  Software Optimization  (target: $12K savings)
 
-2.  **Reduce Travel** (target: $10K savings)
+2.  Reduce Travel (target: $10K savings)
 
-3.  **Review Contractor Scope** (target: $8K savings)
+3.  Review Contractor Scope (target: $8K savings)
 
-4.  **Office Supplies Efficiency** (target: $2-3K)
+4.  Office Supplies Efficiency (target: $2-3K)
 
-**Total achievable:** $32--35K
+Total achievable: $32--35K
 
   
 
-#### **5. Risks & Mitigations**
+5. Risks & Mitigations
 
 1. Software Cuts
 	- Risk: Loss of productivity if tools are removed too aggressively
@@ -274,176 +348,162 @@ a. _Office Supplies: (1-3K)_
 	- Mitigation: Communicate focus on eliminating waste, not restricting essential equipment
 
 
-### Final Recommendation
+Final Recommendation
 
 You can most effectively reach the $30K savings target by focusing on software, travel, and contractor costs. These categories are both large and flexible enough to support meaningful reductions without impairing operations. Office supplies serve as a small "top-up" if needed.""",
     
-    FRAMEWORK_TREE_OF_THOUGHT: """Let me explore multiple approaches to this problem:
+    FRAMEWORK_TREE_OF_THOUGHT: """Monthly Team Performance Report -- January (Enhanced)
 
-**Branch 1: Process-Focused Approach**
-- Root cause: Lack of clear process and planning
-- Solution: Implement stricter sprint planning, definition of done, requirement freeze
-- Advantages: Clear structure, predictable outcomes
-- Limitations: May slow down responsiveness to urgent changes, feels rigid
-- Timeline: 2-3 sprints to stabilize
+Executive Summary
 
-**Branch 2: Communication-Focused Approach**
-- Root cause: Misalignment and unclear expectations
-- Solution: Daily standups with all roles, shared sprint dashboard, weekly retrospectives
-- Advantages: Increases transparency, surfaces issues early
-- Limitations: Doesn't address underlying capacity or requirement issues
-- Timeline: Immediate implementation, gradual improvement
+The team achieved strong progress, completing 87% of planned tasks. Collaboration and communication remained effective, though QA constraints impacted the schedule for two deliverables.
 
-**Branch 3: Capacity-Focused Approach**
-- Root cause: Team is genuinely overcommitted relative to capacity
-- Solution: Reduce sprint commitments by 30%, add buffer time, track velocity accurately
-- Advantages: Realistic planning, reduces stress, builds credibility
-- Limitations: Delivers less per sprint initially, may face stakeholder pushback
-- Timeline: Immediate relief, 3-4 sprints to establish true velocity
+Key Performance Indicators (KPIs)
 
-**Evaluation:**
-Which branch provides the most robust solution?
+- Tasks completed: 26 / 30 (87%)
+- On-time delivery rate: 81%
+- Outstanding items carried to next month: 4
 
-- Branch 1 assumes the problem is discipline (may not be accurate)
-- Branch 2 assumes the problem is communication (helps but incomplete)
-- Branch 3 addresses systemic capacity issues (most likely root cause)
+Accomplishments
 
-**However, a hybrid approach is optimal:**
+- Resolved 12 high-priority backlog items
+- Completed integration testing for Module B
+- Improved meeting cadence resulting in faster issue escalation
 
-**Recommended Hybrid Solution:**
+Blockers & Risks
 
-*Immediate (This Sprint):*
-- Reduce current sprint commitment by 30% (Branch 3)
-- Hold team retrospective to identify specific pain points (Branch 2)
+- Limited QA capacity → slowed verification cycles
+- Priority misalignment across engineering and product teams
+- Risk: Delayed QA may impact next sprint's release readiness
 
-*Next Sprint:*
-- Implement requirement freeze 2 days into sprint (Branch 1)
-- Include QA in planning and story refinement (Branch 2)
-- Track actual velocity vs. planned (Branch 3)
+Action Plan (SMART)
 
-*Ongoing:*
-- Use historical velocity data to inform future commitments
-- Create explicit buffer time (20%) for requirement clarifications
-- Establish clear escalation path for mid-sprint changes
+- Increase QA coverage by adding 10 hours/week of contractor testing (Owner: QA Lead, Due: Feb 15)
+- Publish weekly priority alignment doc to prevent miscommunication (Owner: PM, Start: Feb 1)
+- Complete all rolled-over tasks by Feb 10 with daily micro-standups (Owner: Eng Lead)
 
-This approach acknowledges the capacity issue while improving process and communication.""",
+Forecast
+
+With improved alignment and additional QA support, we expect to reach 95% task completion next month.""",
     
-    FRAMEWORK_SELF_CONSISTENCY: """All three samples share common elements: setting boundaries, offering alternatives, and seeking clarity. The optimal response combines these:
+    FRAMEWORK_SELF_CONSISTENCY: """Step 1 -- Three Candidate Drafts
 
-'I appreciate you thinking of me for this review. I have personal commitments this weekend, but I want to help you prepare for Monday's meeting.
+Candidate A -- Concise & Formal
 
-Here are a few options:
+Subject: Summary of Today's Website Redesign Meeting
 
-1. I can review the executive summary and key recommendations Monday morning at 7 AM and provide targeted feedback before your 9 AM meeting
-2. We could schedule a 30-minute working session Monday at 7:30 AM to discuss the critical points in real-time
-3. For a comprehensive review of the full document, I could deliver detailed feedback by Tuesday afternoon
+Hello team,
 
-Which option would be most valuable for your needs?'
+During today's meeting, we reviewed timeline risks, identified mobile responsiveness as the top priority enhancement, and confirmed the stakeholder review scheduled for next Wednesday. Action items were assigned to Design (responsive layout revisions), Engineering (performance investigation), and Marketing (stakeholder materials).
 
-This response:
-- Maintains professional boundaries without being dismissive
-- Offers concrete alternatives rather than a vague 'I'll try'
-- Puts the ball back in their court to assess true urgency
-- Preserves your weekend while showing willingness to help""",
+Best regards,
+
+Candidate B -- Detailed & Structured
+
+Subject: Website Redesign Project -- Meeting Recap
+
+Hi everyone,
+
+Thanks for attending our redesign project touchpoint.
+
+Key Points:
+
+- Timeline pressure due to expanded scope
+- Mobile responsiveness issues remain unresolved
+- Stakeholder review next Wednesday
+- Action Items:
+  - Design: Updated mockups
+  - Engineering: Fix mobile breakpoints
+  - Marketing: Prepare messaging and visuals
+
+Please reach out with questions.
+
+Candidate C -- More Conversational & Motivational
+
+Subject: Today's Redesign Meeting Highlights
+
+Team,
+
+Great collaboration today. We aligned on immediate priorities: tackling mobile responsiveness and tightening our timeline. With the stakeholder review coming next Wednesday, Design, Engineering, and Marketing each have clear deliverables to complete. Appreciate everyone's commitment--let's keep momentum going.
+
+Step 2 -- Comparison
+
+Strengths Identified:
+
+- Candidate A: clarity, corporate tone
+- Candidate B: structured information for fast consumption
+- Candidate C: positive tone and motivation
+
+Weaknesses Identified:
+
+- A: could be more readable
+- B: a bit dry, missing tone
+- C: lacks structure
+
+Step 3 -- Synthesized Final Email
+
+Final Synthesized Email (Self-Consistency Result):
+
+Subject: Website Redesign Project -- Meeting Summary & Next Steps
+
+Hi team,
+
+Thanks for the productive discussion today. Here is a consolidated summary of our key points and upcoming milestones for the website redesign project:
+
+Main Discussion Points
+
+1. We identified increasing timeline pressure given the expanding scope of the redesign.
+2. Improving mobile responsiveness remains our top technical and design priority.
+3. The stakeholder review is scheduled for next Wednesday, and all teams confirmed readiness to provide updates.
+
+Action Items
+
+- Design: Deliver revised responsive layouts and updated mockups.
+- Engineering: Address mobile breakpoint issues and validate overall performance.
+- Marketing: Prepare messaging, visuals, and the stakeholder-facing overview deck.
+
+Let me know if any clarifications are needed. Appreciate everyone's continued collaboration as we head into next week's review.
+
+Best regards,""",
     
-    FRAMEWORK_FEW_SHOT: """Subject: [SUMMARY] Q3 Budget Review - Variance Analysis & Q4 Adjustments
+    FRAMEWORK_FEW_SHOT: """Project: Data Migration Project
 
-Key Decisions:
-• Approved 12% budget increase for Sales ($45K) to support Q4 pipeline acceleration
-• Froze Marketing events budget ($30K) and reallocated to digital campaigns
-• Deferred IT infrastructure upgrade from Q4 to Q1 2024 ($80K savings)
+Status: Slightly Behind
 
-Outcomes:
-• Overall Q3 variance: -2.3% under budget ($68K savings)
-• Engineering 8% over budget due to unexpected cloud costs
-• Operations achieved 15% savings through vendor renegotiations
+This Week:
+Migrated 4 legacy tables (Customer, Orders, Payments, Inventory)
+Completed validation checks on 58% of migrated data.
 
-Department Highlights:
-• Sales: 94% of budget utilized, strong ROI on trade shows
-• Marketing: 89% of budget utilized, underperformed on digital spend
-• Engineering: 108% of budget utilized, cloud migration costs exceeded estimates
-• Operations: 85% of budget utilized, process automation driving savings
+Next Week:
+Begin migration of Product and Pricing tables
+Conduct full validation sweep on previously migrated tables.
 
-Action Items:
-• @Finance - Prepare detailed cloud cost analysis by Oct 25
-• @Marketing - Submit revised Q4 digital strategy by Oct 27
-• @Operations - Document cost-saving playbook for company-wide adoption by Nov 3
-• @All VPs - Review and approve Q4 adjusted budgets by Oct 30
-
-Next Steps: Q4 budget adjustments finalized in next week's executive meeting
-
-Attachments: Q3_Variance_Report.xlsx, Q4_Budget_Scenarios.pdf""",
+Risks / Blockers:
+Indexing issue in the staging environment is causing slow query performance.
+Remediation is pending from the DBA team (ETA: Tuesday).""",
     
-    FRAMEWORK_REFLECTION_REVISION: """Q3 Self-Assessment - Accomplishments
+    FRAMEWORK_REFLECTION_REVISION: """Reflection:
 
-**1. Customer Portal Redesign - Drove Revenue Impact**
+- The email should specify the cause of delay in a professional, non-defensive way.
+- Stakeholders expect clarity on impact, new timeline, and next steps.
+- Tone should remain accountable and reassuring.
+- Should include a commitment to transparency and a date for the next update.
 
-*What I did:*
-Led the end-to-end redesign of our customer portal, managing a 3-person team through 8-week delivery cycle.
+Revised Email:
 
-*Business impact:*
-- Reduced customer support tickets by 34% (from 450 to 297/month)
-- Increased self-service adoption from 23% to 61%
-- Improved customer satisfaction score from 3.2 to 4.4 out of 5
-- Directly contributed to $127K in cost savings (support time reduction)
+Subject: Updated Timeline for Upcoming Product Launch
 
-*Challenge overcome:*
-When we discovered our original mobile design wouldn't work with legacy systems, I proposed and implemented a progressive web app approach that maintained our timeline while delivering 95% of planned functionality.
+Hi everyone,
 
-**2. Data Migration - Minimized Business Risk**
+I want to share an update regarding the upcoming product launch. During final integration testing, our team identified several issues that require additional development and QA time. To ensure a stable and reliable release, we are adjusting the launch date by two weeks. The new target launch date is [Insert Date].
 
-*What I did:*
-Architected and executed migration of 2.3M customer records from legacy CRM to Salesforce with zero downtime.
+Our teams are actively working through the issues, and we have implemented a focused mitigation plan to keep the schedule tight. I will provide the next status update by [Insert Date] or sooner if we complete key milestones ahead of plan.
 
-*Business impact:*
-- Zero data loss (validated 100% of migrated records)
-- Completed 2 weeks ahead of schedule
-- Enabled sales team to access real-time customer data, improving response time by 40%
+Thank you for your understanding and support. Please feel free to reach out with any questions.
 
-*Challenge overcome:*
-Identified critical data integrity issues during testing phase that would have corrupted 18% of records. Developed custom validation scripts and recovery procedures, preventing what would have been a major business disruption.
+Best regards,
 
-**3. Team Development - Multiplying Impact**
-
-*What I did:*
-Mentored Junior Developers Alex and Priya through structured 12-week onboarding program I created.
-
-*Impact:*
-- Both are now independently shipping production code (previously required 60% oversight)
-- Alex delivered the notification system refactor (user engagement up 28%)
-- Priya resolved the payment processing bug that was costing $3K/week in failed transactions
-- My mentorship approach was adopted as team-wide standard by Engineering Manager
-
-**4. Process Optimization - Scaling Team Efficiency**
-
-*What I did:*
-Analyzed deployment bottlenecks and partnered with DevOps to redesign CI/CD pipeline.
-
-*Impact:*
-- Reduced deployment time from 47 minutes to 12 minutes (74% improvement)
-- Decreased deployment failures from 12% to 2%
-- Enabled team to ship 3x more frequently (2x per week → 6x per week)
-- Documented new process, now used by 4 other engineering teams
-
-**5. Strategic Skill Development**
-
-*What I did:*
-Earned AWS Solutions Architect certification and immediately applied knowledge to our infrastructure planning.
-
-*Impact:*
-- Identified $84K/year in potential cloud cost savings through reserved instances and auto-scaling optimization
-- Presented findings to VP Engineering, now part of Q4 cost-reduction initiative
-- Became go-to resource for architecture questions (consulted on 3 cross-team projects)
-
-**Alignment to Company Goals:**
-These accomplishments directly support our Q3 company priorities:
-- Customer Experience (Portal redesign - satisfaction up 37%)
-- Operational Excellence (Migration, deployment process)
-- Team Growth (Mentorship, knowledge sharing)
-- Cost Management (Support savings, cloud optimization)
-
-**Looking Ahead:**
-Given these results, I'm ready to take on increased scope. Specifically interested in leading the Q4 mobile app initiative or the customer data platform project."""
+[Your Name]"""
 }
 
 # Intermediate data for frameworks that need it
