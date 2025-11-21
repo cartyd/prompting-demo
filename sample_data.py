@@ -24,7 +24,7 @@ Where should we focus on our cost-cutting efforts?""",
 
     FRAMEWORK_TREE_OF_THOUGHT: """Improve the following monthly team performance report and make it more effective. Here is the report to improve:
 
-Team Performance Report -- January
+Team Performance Report [January]
 
 This month the team completed most of their tasks. We met for several meetings and discussed project issues. Some items were delayed, but we expect to finish them early next month. The team communicated well overall.
 
@@ -34,8 +34,6 @@ Next month we will try to finish the delayed tasks and stay on track.""",
     FRAMEWORK_SELF_CONSISTENCY: "Write an email summarizing key points from our website redesign project meeting.",
     
     FRAMEWORK_FEW_SHOT: """Write a weekly project update for the Data Migration Project. The project information follows:
-
-# Basic Prompt
 
 Project: Data Migration Project
 
@@ -97,17 +95,27 @@ FRAMEWORK_PROMPTS = _build_framework_prompts()
 # Static prompts for offline mode - frozen snapshot for demos
 # These are pre-built versions that won't change with template updates
 OFFLINE_FRAMEWORK_PROMPTS = {
-    FRAMEWORK_CHAIN_OF_THOUGHT: """Analyze our department's cost structure and identify the most effective way to reduce costs by 15%. Provide your output using this structure:
+    FRAMEWORK_CHAIN_OF_THOUGHT: """Our department must reduce operational costs by 15% next quarter, given our current quarterly spend of $200,000, broken down as follows:
 
-1. Summary of required savings
-2. Quantitative breakdown of each cost category
-3. High, medium, and low impact opportunities
-4. Ranked action plan with projected savings
-5. Risks, trade-offs, and mitigation strategies""",
+* Software licenses: $80,000
+* Office supplies: $30,000
+* Travel: $50,000
+* External contractors: $40,000
+
+I want you to think step-by-step about this problem.
+
+1. Calculate the exact dollar amount that must be cut.
+2. Analyze each spending category in terms of size, flexibility, and typical savings potential.
+3. Identify which categories offer the best opportunities for meaningful reductions without harming essential operations.
+4. Propose a cost-cutting plan that meets or exceeds the target, with specific suggestions and estimated savings per category.
+5. Justify your recommendations with brief reasoning.
+
+Provide your final answer as a clear, concise action plan, but use detailed internal reasoning to get there.""",
 
     FRAMEWORK_TREE_OF_THOUGHT: """Improve the following monthly team performance report using a Tree of Thought approach.
 
 Break your reasoning into multiple branches that explore distinct improvement strategies, including:
+
 - Structure (how the report is organized)
 - Tone & clarity (how clearly and professionally it communicates)
 - Data emphasis (metrics, KPIs, and measurable results)
@@ -123,7 +131,7 @@ After generating the branches, compare them, evaluate their strengths and weakne
 
 Then produce a final, fully rewritten report that merges the strongest ideas from all branches. Here is the report to improve:
 
-Team Performance Report -- January
+Team Performance Report [January]
 
 This month the team completed most of their tasks. We met for several meetings and discussed project issues. Some items were delayed, but we expect to finish them early next month. The team communicated well overall.
 
@@ -146,7 +154,7 @@ Key points discussed:
 - Upcoming stakeholder review next Wednesday
 - Action items for Design, Engineering, and Marketing teams""",
 
-    FRAMEWORK_FEW_SHOT: """Create polished, executive-ready weekly project updates by following the structure and tone demonstrated in the examples below.
+    FRAMEWORK_FEW_SHOT: """Create a polished, executive-ready weekly project updates by following the structure and tone demonstrated in the examples below.
 
 📘 Example 1
 Project: Website Redesign
@@ -155,11 +163,12 @@ Status: On Track
 
 This Week:
 
-Completed user testing sessions with 18 participants
-Finalized UI layouts for the checkout flow
+- Completed user testing sessions with 18 participants
+- Finalized UI layouts for the checkout flow
 Next Week:
 
 Begin implementing updated components in the production environment.
+
 Risks / Blockers:
 
 Awaiting approval on two new design assets (ETA: Monday).
@@ -226,7 +235,7 @@ You need to cut 15% of $200,000 = $30,000 in the next quarter. The biggest and m
 -  **Office supplies ($30,000):** Possible but limited savings ($2--3K).
   
 **Overall:** Focus on software, travel, and contractors; use supplies as a minor top-up to reach $30K.""",
-    FRAMEWORK_TREE_OF_THOUGHT: """Revised Monthly Team Performance Report -- January
+    FRAMEWORK_TREE_OF_THOUGHT: """Monthly Team Performance Report [January]
 
 The team performed well overall this month and completed most assigned tasks. We held regular meetings to review progress and address project issues. A few tasks were delayed, but we expect to complete them early next month. Team communication remained strong throughout the period.
 
@@ -267,122 +276,117 @@ Thanks,
 
 # Framework outputs for each framework
 FRAMEWORK_OUTPUTS = {
-    FRAMEWORK_CHAIN_OF_THOUGHT: """1. Summary of Required Savings
-
-- Current quarterly spend: $200,000
-- Required reduction (15%): $30,000
-
-  
-2. Quantitative Breakdown
-
-- Software Licenses: $80,000 (40%) - Largest category; often overprovisioned
-- Travel: $50,000 (25%) - Discretionary; can be replaced with virtual alternatives
-- External Contractors: $40,000 (20%) - Flexible; may contain non-critical tasks
-- Office Supplies: $30,000 (15%) - Smaller savings potential
-
-3. Impact Opportunities
-
-High Impact
-
-a. Software licenses (10-14K potential savings)
-
-	- Audit unused or lightly used seats
-	- Consolidate overlapping tools
-	- Renegotiate contracts or shift to lower tiers
-	- Consider replacing premium tools with lower-cost alternatives
-
-b. Travel (8-12K potential savings)
-
-	Restrict nonessential travel
-	Require virtual-first meeting policies
-	Implement stricter preapproval steps
-
-Medium Impact
-
-a. External Contractors (6-10K potential savings)
-
-	Reduce hours or renegotiate scope
-	Bring lower-skill tasks in-house temporarily
-	Pause non-urgent projects until next quarter
-
-Low Impact
-
-a. Office Supplies: (1-3K)
-
-	Centralize purchasing to reduce redundant orders
-	Implement usage tracking or quarterly caps
-	Switch to bulk and lower-cost suppliers
-
-  
-
-4. Ranked Action Plan
-
-1.  Software Optimization  (target: $12K savings)
-
-2.  Reduce Travel (target: $10K savings)
-
-3.  Review Contractor Scope (target: $8K savings)
-
-4.  Office Supplies Efficiency (target: $2-3K)
-
-Total achievable: $32--35K
-
-  
-
-5. Risks & Mitigations
-
-1. Software Cuts
-	- Risk: Loss of productivity if tools are removed too aggressively
-	- Mitigation: Prioritize unused or duplicated tools; run pilot tests before full removal
-
-2. Reduced Travel
-	-   Risk: Stakeholder or customer relationship degradation
-	- Mitigation: Use high-quality virtual meetings and hybrid travel approach
-
-3. Contractor Reductions
-	-  Risk: Delays in project timelines
-	- Mitigation: Focus cuts on non-critical projects; redistribute tasks internally
-	- 
-4. Office Supply Reductions
-	- Risk: Low morale if cuts are perceived as excessive
-	- Mitigation: Communicate focus on eliminating waste, not restricting essential equipment
-
-
-Final Recommendation
-
-You can most effectively reach the $30K savings target by focusing on software, travel, and contractor costs. These categories are both large and flexible enough to support meaningful reductions without impairing operations. Office supplies serve as a small "top-up" if needed.""",
+    FRAMEWORK_CHAIN_OF_THOUGHT: """
     
-    FRAMEWORK_TREE_OF_THOUGHT: """Monthly Team Performance Report -- January (Enhanced)
+1. **Target reduction**
+
+* Current quarterly spend   : $200,000
+* Required reduction (15%)  : $30,000
+* New target spend          : $170,000
+
+2. **Recommended focus areas** 
+We'll prioritize categories that are:
+* Large enough to yield meaningful savings
+* More flexible/discretionary than core operations
+
+**That typically means:** travel, external contractors, and to a lesser extent software licenses. Office supplies are relatively small and often already lean.
+
+
+3. **Proposed cost-cutting plan**
+
+    A. *Travel*
+
+    * Current: $50,000
+    * Proposed reduction: $12,000 (24%)
+    * New spend: $38,000
+
+    *Actions (Travel):*
+
+    * Tighten travel policy (default to virtual meetings where possible).
+    * Require pre-approval for all air travel and hotels.
+    * Switch to lower-cost hotels and advance booking for better fares.
+
+    B. *External contractors*
+
+     Current: $40,000
+     Proposed reduction: $10,000 (25%)
+     New spend: $30,000
+
+    *Actions (External contractors):*
+    
+    * Prioritize which contractor work is truly critical next quarter.
+    * Bring suitable tasks back in-house where team capacity allows.
+    * Renegotiate rates or scale back hours on lower-impact projects.
+
+    C. *Software licenses*
+
+    * Current: $80,000
+    * Proposed reduction: $7,000 (≈8.75%)
+    * New spend: $73,000
+
+    *Actions (Software licenses):*
+
+    * Audit licenses to remove unused or underused seats.
+    * Consolidate overlapping tools (e.g., multiple project management or chat tools).
+    * Move some users to lower-tier plans where advanced features aren't needed.
+
+    D. *Office supplies*
+    * Current: $30,000
+    * Proposed reduction: $1,000 (≈3.3%)
+    * New spend: $29,000
+
+    **Actions (Office Supplies):**
+
+    * Standardize items (no premium "nice-to-have" variants).
+    * Set simple quarterly limits per team and encourage digital alternatives (e-signatures, electronic note-taking).
+   
+4. **Summary action plan (meets 15% target)**  
+
+    **Total reductions:**
+    * Travel: $12,000
+    * External contractors: $10,000
+    * Software licenses: $7,000
+    * Office supplies: $1,000
+    
+    **Total:** $30,000 (15% of $200,000)
+
+**Why this mix?**
+
+  * Focuses bigger cuts on discretionary or flexible categories (travel, contractors).
+  * Uses optimization rather than elimination for software, which is often critical to productivity.
+  * Keeps office supply cuts modest to avoid day-to-day friction, but still sends a cost-conscious signal.""",
+    
+    FRAMEWORK_TREE_OF_THOUGHT: """Monthly Team Performance Report [January]
 
 Executive Summary
 
 The team achieved strong progress, completing 87% of planned tasks. Collaboration and communication remained effective, though QA constraints impacted the schedule for two deliverables.
 
-Key Performance Indicators (KPIs)
+**Key Performance Indicators (KPIs)**
 
 - Tasks completed: 26 / 30 (87%)
 - On-time delivery rate: 81%
 - Outstanding items carried to next month: 4
 
-Accomplishments
+**Accomplishments**
 
 - Resolved 12 high-priority backlog items
 - Completed integration testing for Module B
 - Improved meeting cadence resulting in faster issue escalation
 
-Blockers & Risks
+**Blockers & Risks**
 
 - Limited QA capacity → slowed verification cycles
 - Priority misalignment across engineering and product teams
 - Risk: Delayed QA may impact next sprint's release readiness
 
-Action Plan (SMART)
+**Action Plan (SMART)**
 
 - Increase QA coverage by adding 10 hours/week of contractor testing (Owner: QA Lead, Due: Feb 15)
 - Publish weekly priority alignment doc to prevent miscommunication (Owner: PM, Start: Feb 1)
 - Complete all rolled-over tasks by Feb 10 with daily micro-standups (Owner: Eng Lead)
 
-Forecast
+**Forecast**
 
 With improved alignment and additional QA support, we expect to reach 95% task completion next month.""",
     
@@ -397,6 +401,9 @@ Hello team,
 During today's meeting, we reviewed timeline risks, identified mobile responsiveness as the top priority enhancement, and confirmed the stakeholder review scheduled for next Wednesday. Action items were assigned to Design (responsive layout revisions), Engineering (performance investigation), and Marketing (stakeholder materials).
 
 Best regards,
+
+================================================
+
 
 Candidate B -- Detailed & Structured
 
@@ -418,6 +425,8 @@ Key Points:
 
 Please reach out with questions.
 
+================================================
+
 Candidate C -- More Conversational & Motivational
 
 Subject: Today's Redesign Meeting Highlights
@@ -425,6 +434,8 @@ Subject: Today's Redesign Meeting Highlights
 Team,
 
 Great collaboration today. We aligned on immediate priorities: tackling mobile responsiveness and tightening our timeline. With the stakeholder review coming next Wednesday, Design, Engineering, and Marketing each have clear deliverables to complete. Appreciate everyone's commitment--let's keep momentum going.
+
+================================================
 
 Step 2 -- Comparison
 
